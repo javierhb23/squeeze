@@ -1,0 +1,14 @@
+{
+    "name": "Squeeze",
+    "manifest_version": 3,
+    "version": "0.1",
+    "description": "Make old-school websites readable on wide displays by limiting their width",
+    "permissions": ["activeTab", "scripting", "storage"],
+    "action": {
+        "default_popup": "popup/popup.html"
+    },
+    "content_scripts": [{
+        "matches": [ "<all_urls>" ],
+        "js": [ "content.js" ]
+    }]
+}

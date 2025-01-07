@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <title>Squeeze</title>
+    <link href="bootstrap-5.3.3-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap-icons-1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="popup.css" rel="stylesheet">
+    <script src="popup.js" type="module"></script>
+</head>
+
+<body>
+    <main>
+        <div class="container-fluid" id="error-container" style="display: none;">
+            <div class="d-flex p-2">
+                <p class="flex-grow-1" id="error"></p>
+                <btn class="btn btn-secondary" id="btn-dismiss">Dismiss</btn>
+            </div>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="toggleExtension">
+            <label class="form-check-label" for="toggleExtension">Enable extension</label>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="toggleSite">
+            <label class="form-check-label" for="toggleSite">Enable for this site</label>
+        </div>
+        <div class="input-group mb-2">
+            <span class="input-group-text">URL</span>
+            <input class="form-control" id="url">
+            <button type="button" class="btn btn-primary">+</button>
+            <button type="button" class="btn btn-danger">-</button>
+        </div>
+        <h2 class="form-check-label fs-6">Settings for this tab</h2>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="selectConfig" id="useGlobal" value="useGlobal" checked>
+            <label class="form-check-label" for="useGlobal">Use global settings</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="selectConfig" id="useSpecific" value="useSpecific">
+            <label class="form-check-label" for="useSpecific">Use site-specific settings</label>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="max-width" class="form-label">Max Width</label>
+                <input type="number" class="form-control control" id="max-width">
+            </div>
+            <div class="col">
+                <label for="max-width-unit" class="form-label">Unit</label>
+                <select class="form-select control" id="max-width-unit">
+                    <option selected>px</option>
+                    <option>%</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="margin-left" class="form-label">Left Margin</label>
+                <input type="number" class="form-control control" id="margin-left">
+            </div>
+            <div class="col">
+                <label for="margin-left-unit" class="form-label">Unit</label>
+                <select class="form-select control" id="margin-left-unit">
+                    <option selected>px</option>
+                    <option>%</option>
+                </select>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
