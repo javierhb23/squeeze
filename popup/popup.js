@@ -1,7 +1,8 @@
 import "./utils.js"
 
 document.addEventListener("DOMContentLoaded", handlePopupLoad);
-document.querySelectorAll("[name=selectConfig]").forEach((element) => {
+document.querySelector("#toggle-extension").addEventListener("change", handleToggleExtension);
+document.querySelectorAll("[name=select-config]").forEach((element) => {
     element.addEventListener("change", handleSelectConfig);
 });
 document.querySelectorAll(".control").forEach((input) => {
