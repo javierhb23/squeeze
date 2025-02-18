@@ -3,7 +3,7 @@ import "./utils.js"
 document.addEventListener("DOMContentLoaded", handlePopupLoaded);
 document.querySelector("#toggle-extension").addEventListener("change", handleToggleExtension);
 document.querySelectorAll(".control").forEach((input) => {
-    input.addEventListener("input", handleInputChanged);
+    input.addEventListener("input", handleStyleInputChanged);
 });
 
 // Set default settings
@@ -37,7 +37,7 @@ async function getTab() {
 
 async function getStorage(key) {
     for (let i = 0; i < 2; i++) { // Try 2 times
-        const storage = await chrome.storage.local.get();
+        const storage = await chrome.storage.local.get(key);
         if (storage.hasOwnProperty("enabled")) {
             return storage;
         } else {
@@ -63,11 +63,13 @@ async function handlePopupLoaded(event) {
     }
 }
 
-async function handleInputChanged(event) {
+async function handleStyleInputChanged(event) {
+    const global = getStylesFromPopup();
+    const message = { "action": "update", "global": global };
+
     const tab = await getTab();
-    message.styles = await getStylesFromPopup();
-    const error = await chrome.tabs.sendMessage(tab.id, message);
-    if (error) p.innerText = `${error}`;
+    const response = await chrome.tabs.sendMessage(tab.id, message);
+    if (response.error) console.log(response.error);
 }
 
 async function handleToggleExtension(event) {
