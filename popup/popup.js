@@ -2,9 +2,6 @@ import "./utils.js"
 
 document.addEventListener("DOMContentLoaded", handlePopupLoaded);
 document.querySelector("#toggle-extension").addEventListener("change", handleToggleExtension);
-document.querySelectorAll("[name=select-config]").forEach((element) => {
-    element.addEventListener("change", handleSelectConfig);
-});
 document.querySelectorAll(".control").forEach((input) => {
     input.addEventListener("input", handleInputChanged);
 });
@@ -64,15 +61,6 @@ async function handlePopupLoaded(event) {
             break;
         }
     }
-}
-
-async function handleSelectConfig(event) {
-    const tab = await getTab();
-
-    const selectConfig = event.target.value;
-
-    if (selectConfig === "useGlobal") { }
-    if (selectConfig === "useSpecific") { }
 }
 
 async function handleInputChanged(event) {
