@@ -12,20 +12,41 @@ document.querySelectorAll(".control").forEach((input) => {
 // Set default settings
 chrome.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') {
-        chrome.storage.local.set({
-            "enabled": true,
-            "global": {
-                "max-width": "1000px",
-                "margin-left": "200px"
-            },
-            "sites": []
-        });
+        setDefaults();
     }
 });
+
+document.querySelector("#clear").addEventListener("click", () => {
+    chrome.storage.local.clear(() => {
+        console.log("Cleared storage");
+    });
+});
+
+function setDefaults() {
+    return chrome.storage.local.set({
+        "enabled": true,
+        "global": {
+            "max-width": "1000px",
+            "margin-left": "200px"
+        },
+        "sites": []
+    });
+}
 
 async function getTab() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     return tab;
+}
+
+async function getStorage(key) {
+    for (let i = 0; i < 2; i++) { // Try 2 times
+        const storage = await chrome.storage.local.get();
+        if (storage.hasOwnProperty("enabled")) {
+            return storage;
+        } else {
+            await setDefaults();
+        }
+    }
 }
 
 async function handlePopupLoaded(event) {
@@ -33,15 +54,15 @@ async function handlePopupLoaded(event) {
     // TODO: Retrieve saved settings into popup inputs
 
     const tab = await getTab();
-    const { sites } = await chrome.storage.local.get(["sites"]);
-
-    if (!sites)
-        chrome.storage.local.set({ sites: [] });
-
-    const urls = sites.map((site) => site.url);
+    const storage = await getStorage();
+    const urls = storage.sites.map((site) => site.url);
     for (const url of urls) {
+        document.querySelector("#url").value = tab.url;
         const isMatch = new RegExp(url.replace("*", ".*")).test(tab.url);
-        document.querySelector("#url").value = isMatch ? url : tab.url;
+        if (isMatch) {
+            document.querySelector("#url").value = url;
+            break;
+        }
     }
 }
 
