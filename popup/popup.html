@@ -15,6 +15,7 @@
             <input class="form-check-input" type="checkbox" role="switch" id="toggle-extension">
             <label class="form-check-label" for="toggle-extension">Enable for this URL</label>
         </div>
+        <button class="btn btn-secondary" id="mock">Mock</button>
         <button class="btn btn-danger" id="clear">Clear Storage</button>
     </header>
     <main>
@@ -36,32 +37,34 @@
         </ul>
         <div class="tab-content">
             <section class="tab-pane fade show active" id="settings-tab-pane" role="tabpanel" tabindex="0">
-                <div class="row">
-                    <div class="col">
-                        <label for="max-width" class="form-label">Max Width</label>
-                        <input type="number" class="form-control control" id="max-width">
+                <form id="style-controls">
+                    <div class="row">
+                        <div class="col">
+                            <label for="max-width" class="form-label">Max Width</label>
+                            <input type="number" class="form-control control" name="max-width">
+                        </div>
+                        <div class="col-3">
+                            <label for="max-width-unit" class="form-label">Unit</label>
+                            <select class="form-select control" name="max-width-unit">
+                                <option selected>px</option>
+                                <option>%</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-3">
-                        <label for="max-width-unit" class="form-label">Unit</label>
-                        <select class="form-select control" id="max-width-unit">
-                            <option selected>px</option>
-                            <option>%</option>
-                        </select>
+                    <div class="row">
+                        <div class="col">
+                            <label for="margin-left" class="form-label">Left Margin</label>
+                            <input type="number" class="form-control control" name="margin-left">
+                        </div>
+                        <div class="col-3">
+                            <label for="margin-left-unit" class="form-label">Unit</label>
+                            <select class="form-select control" name="margin-left-unit">
+                                <option selected>px</option>
+                                <option>%</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <label for="margin-left" class="form-label">Left Margin</label>
-                        <input type="number" class="form-control control" id="margin-left">
-                    </div>
-                    <div class="col-3">
-                        <label for="margin-left-unit" class="form-label">Unit</label>
-                        <select class="form-select control" id="margin-left-unit">
-                            <option selected>px</option>
-                            <option>%</option>
-                        </select>
-                    </div>
-                </div>
+                </form>
             </section>
             <section class="tab-pane fade" id="sites-tab-pane" role="tabpanel" tabindex="0">
                 <ul class="list-group" id="sites-list-group">
