@@ -34,10 +34,16 @@ async function registerMockURLs() {
     if (!sites[0]) {
         for (const url of mock_urls) {
             const site = new Site(url)
-            storage.sites.push(site);
+            sites.push(site);
         }
+        chrome.storage.local.set(sites);
     }
-    chrome.storage.local.set(storage);
 }
 
-export { getStylesFromPopup, registerMockURLs };
+function clearStorage() {
+    chrome.storage.local.clear(() => {
+        console.log("Cleared storage");
+    });
+}
+
+export { getStylesFromPopup, registerMockURLs, clearStorage };
