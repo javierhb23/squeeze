@@ -1,3 +1,11 @@
+class Site {
+    url;
+    enabled = true;
+    constructor(url) {
+        this.url = url;
+    }
+}
+
 const selectors = {
     "max-width": { "value": "#max-width", "unit": "#max-width-unit" },
     "left-margin": { "value": "#left-margin", "unit": "#left-margin-unit" }
@@ -19,16 +27,6 @@ async function registerMockURLs() {
         "https://www.eyrie.org/~dvandom/misc/*"
     ];
 
-    class Site {
-        url;
-        enabled = true;
-        useSpecific = false;
-        styles = {};
-        constructor(url) {
-            this.url = url;
-        }
-    }
-
     const { sites } = await chrome.storage.local.get(["sites"]);
 
     if (!sites[0]) {
@@ -36,7 +34,10 @@ async function registerMockURLs() {
             const site = new Site(url)
             sites.push(site);
         }
-        chrome.storage.local.set(sites);
+        chrome.storage.local.set({"sites": sites});
+    }
+    else {
+        console.log("Storage already contains sites. Aborting")
     }
 }
 
@@ -46,4 +47,4 @@ function clearStorage() {
     });
 }
 
-export { getStylesFromPopup, registerMockURLs, clearStorage };
+export { getStylesFromPopup, registerMockURLs, clearStorage, Site };

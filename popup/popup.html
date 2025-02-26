@@ -68,9 +68,9 @@
             </section>
             <section class="tab-pane fade" id="sites-tab-pane" role="tabpanel" tabindex="0">
                 <ul class="list-group" id="sites-list-group">
-                    <template id="site-list-item">
+                    <template id="site-list-item-template">
                         <li class="list-group-item list-group-item-action d-flex">
-                            <span class="me-auto"></span>
+                            <span class="me-auto"><slot name="url"></slot></span>
                             <button type="button" class="btn-close" aria-label="Close"></button>
                         </li>
                     </template>
