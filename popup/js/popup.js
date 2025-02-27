@@ -20,19 +20,48 @@ async function popupOpen() {
     }
     displayStoredSites(urls);
     document.querySelector("#url").value = matchedUrl ?? tab.url;
-
 }
 
-async function displayStoredSites(urls) {
+function displayStoredSites(urls) {
     const ul = document.querySelector("#sites-list-group");
     const template = document.querySelector("#site-list-item-template");
 
+    const listItems = [];
+
     for (const url of urls) {
-        const clone = template.content.cloneNode(true);
-        const span = clone.querySelector("span");
+        const li = template.content.cloneNode(true);
+        const span = li.querySelector("span");
         span.innerHTML = url;
-        ul.appendChild(clone);
+        listItems.push(li)
     }
+
+    while (ul.firstChild) {
+        ul.removeChild(ul.firstChild);
+    }
+
+    for (const li of listItems){
+        ul.appendChild(li);
+    }
+
+    document.querySelectorAll("#remove-site-btn").forEach((btn) => {
+        btn.addEventListener("click", handleRemoveSiteButton);
+    });
+}
+
+async function handleRemoveSiteButton(event) {
+    const li = event.target.parentNode;
+    const url = li.querySelector("span[name=url-span]").innerHTML;
+    const { sites } = await chrome.storage.local.get("sites");
+
+    for (const i in sites) {
+        if (sites[i].url === url) {
+            sites.splice(i, 1);
+            break;
+        }
+    }
+
+    await chrome.storage.local.set({ "sites": sites });
+    li.remove();
 }
 
 async function handleToggleExtension(event) {
