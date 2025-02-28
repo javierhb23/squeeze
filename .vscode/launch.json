@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome",
+            "url": "https://example.com",
+            "runtimeArgs": ["--load-extension=${workspaceFolder}"]
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Brave",
+            "runtimeExecutable": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+            "userDataDir": true,
+            "url": "http://example.com",
+            "webRoot": "${workspaceFolder}",
+            "runtimeArgs": ["--load-extension=${workspaceFolder}"],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/popup/**",
+            ]
+        }
+    ]
+}
