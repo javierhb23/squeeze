@@ -1,8 +1,4 @@
 // TODO: Retrieve saved settings and apply them on page load
-chrome.storage.local.get().then(storage => {
-    console.log("chrome.storage.local.get()");
-    console.log(storage);
-});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     try {
