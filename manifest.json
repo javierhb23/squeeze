@@ -12,6 +12,7 @@
         "js": ["content.js"]
     }],
     "background": {
-        "scripts": ["service-worker.js"]
+        "type": "module",
+        "service_worker": "service-worker.js"
     }
 }
