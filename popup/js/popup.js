@@ -3,23 +3,26 @@ import "./bootstrap.min.js"
 import { getStylesFromPopup, registerMockURLs, clearStorage, Site } from "./utils.js";
 
 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+const { sites } = await chrome.storage.local.get("sites");
 
 let isInStorage = false;
-let matchedUrl;
+let matchingUrl;
 
-async function popupOpen() {
-    const storage = await chrome.storage.local.get();
-    const urls = storage.sites?.map((site) => site.url);
+function onOpenPopup() {
+    const urls = sites.map((site) => site.url);
+    retrieveMatchingURL(urls);
+    displayStoredSites(urls);
+}
+
+function retrieveMatchingURL(urls) {
     for (const url of urls) {
-        // Use '*' for glob matching
         isInStorage = new RegExp(url.replace("*", ".*")).test(tab.url);
         if (isInStorage) {
-            matchedUrl = url;
+            matchingUrl = url;
             break;
         }
     }
-    displayStoredSites(urls);
-    document.querySelector("#url").value = matchedUrl ?? tab.url;
+    document.querySelector("#url").value = matchingUrl ?? tab.url;
 }
 
 function displayStoredSites(urls) {
@@ -39,7 +42,7 @@ function displayStoredSites(urls) {
         ul.removeChild(ul.firstChild);
     }
 
-    for (const li of listItems){
+    for (const li of listItems) {
         ul.appendChild(li);
     }
 
@@ -78,7 +81,6 @@ async function handleToggleExtension(event) {
             chrome.storage.local.set({ "sites": sites });
         }
 
-        //
         const action = "enable";
         const message = { "action": action };
         const response = await chrome.tabs.sendMessage(tab.id, message);
@@ -124,4 +126,4 @@ document.querySelectorAll(".control").forEach((input) => {
 // document.querySelector("#clear").addEventListener("click", clearStorage);
 document.querySelector("#mock").addEventListener("click", registerMockURLs);
 
-popupOpen();
+onOpenPopup();
