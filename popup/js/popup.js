@@ -56,15 +56,12 @@ async function handleRemoveSiteButton(event) {
     const url = li.querySelector("span[name=url-span]").innerHTML;
     const { sites } = await chrome.storage.local.get("sites");
 
-    for (const i in sites) {
-        if (sites[i].url === url) {
-            sites.splice(i, 1);
-            break;
-        }
-    }
+    const index = sites.findIndex((site) => site.url === url);
 
-    await chrome.storage.local.set({ "sites": sites });
-    li.remove();
+    if (index > -1) {
+        await chrome.storage.local.set({ "sites": sites.splice(index, 1) });
+        li.remove();
+    }
 }
 
 async function handleToggleExtension(event) {
