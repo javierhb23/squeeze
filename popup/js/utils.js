@@ -8,7 +8,7 @@ class Site {
 
 const selectors = {
     "max-width": { "value": "#max-width", "unit": "#max-width-unit" },
-    "left-margin": { "value": "#left-margin", "unit": "#left-margin-unit" }
+    "margin-left": { "value": "#margin-left", "unit": "#margin-left-unit" }
 };
 
 function getStylesFromPopup() {
