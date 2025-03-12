@@ -47,4 +47,4 @@ function clearStorage() {
     });
 }
 
-export { getStylesFromPopup, registerMockURLs, clearStorage, Site };
+export { getStylesFromPopup, registerMockURLs, clearStorage, Site, selectors };

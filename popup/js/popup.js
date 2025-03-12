@@ -1,6 +1,6 @@
 import "./utils.js"
 import "./bootstrap.min.js"
-import { getStylesFromPopup, registerMockURLs, clearStorage, Site } from "./utils.js";
+import { getStylesFromPopup, registerMockURLs, clearStorage, Site, selectors } from "./utils.js";
 
 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 const { sites } = await chrome.storage.local.get("sites");
@@ -12,6 +12,21 @@ function onOpenPopup() {
     const urls = sites.map((site) => site.url);
     retrieveMatchingURL(urls);
     displayStoredSites(urls);
+    retrieveConfig();
+}
+
+async function retrieveConfig() {
+    const { global } = await chrome.storage.local.get("global");
+    for (const prop in selectors) {
+        const valueField = document.querySelector(selectors[prop]["value"]);
+        const unitField = document.querySelector(selectors[prop]["unit"]);
+        const [value, unit] = global[prop].match(/(\d+)(\w+)/).splice(1);
+        valueField.value = value;
+        unitField.value = unit;
+    }
+    document.querySelectorAll(".control").forEach((input) => {
+        input.addEventListener("input", handleStyleInputChanged);
+    });
 }
 
 function retrieveMatchingURL(urls) {
@@ -115,9 +130,6 @@ async function handleStyleInputChanged(event) {
 }
 
 document.querySelector("#toggle-extension").addEventListener("change", handleToggleExtension);
-document.querySelectorAll(".control").forEach((input) => {
-    input.addEventListener("input", handleStyleInputChanged);
-});
 
 // DEBUG
 // document.querySelector("#clear").addEventListener("click", clearStorage);
