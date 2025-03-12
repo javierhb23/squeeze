@@ -8,3 +8,10 @@ body {
     height: 600px;
     overflow-x: hidden;
 }
+
+header,
+.row,
+.input-group,
+.nav {
+    margin-bottom: 1em;
+}
