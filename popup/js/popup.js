@@ -20,7 +20,7 @@ async function retrieveConfig() {
     for (const prop in selectors) {
         const valueField = document.querySelector(selectors[prop]["value"]);
         const unitField = document.querySelector(selectors[prop]["unit"]);
-        const [value, unit] = global[prop].match(/(\d+)(\w+)/).splice(1);
+        const [value, unit] = global[prop].match(/(\d+)(\D+)/).splice(1);
         valueField.value = value;
         unitField.value = unit;
     }
