@@ -16,6 +16,11 @@ function onOpenPopup() {
 }
 
 async function retrieveConfig() {
+    // Extension switch
+    const { enabled } = await chrome.storage.local.get("enabled");
+    document.querySelector("#toggle-extension").checked = enabled;
+
+    // Global styles
     const { global } = await chrome.storage.local.get("global");
     for (const prop in selectors) {
         const valueField = document.querySelector(selectors[prop]["value"]);
