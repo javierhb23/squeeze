@@ -2,20 +2,10 @@
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     try {
-        /*
-        if (message.action === "enable") {
-            // TODO: Retrieve styles for website URL
-            // TODO: Apply retrieved styles
+        console.log(message);
+        if (message["global"]) {
+            applyStyles(message["global"]);
         }
-        if (message.action === "disable") {
-            // TODO: Remove styles
-        }
-        if (message.action === "update") {
-            if (message.site) {
-                if (message.url) { }
-            }
-        }
-        */
     } catch (error) {
         console.log(error);
         sendResponse({ "error": error });
@@ -23,7 +13,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 function applyStyles(styles = {}) {
-    for (const prop of []) {
+    for (const prop in styles) {
+        console.log(prop, styles[prop]);
         document.body.style[prop] = styles[prop] ?? null;
     }
 }
