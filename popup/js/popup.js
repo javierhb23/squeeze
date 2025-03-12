@@ -29,8 +29,11 @@ async function retrieveConfig() {
         valueField.value = value;
         unitField.value = unit;
     }
+
     document.querySelectorAll(".control").forEach((input) => {
-        input.addEventListener("input", handleStyleInputChanged);
+        input.addEventListener("input", () => {
+            document.querySelector("#apply-btn").disabled = false;
+        });
     });
 }
 
@@ -119,22 +122,25 @@ async function handleToggleExtension(event) {
     if (response?.error) throw new Error(response.error);
 }
 
-async function handleStyleInputChanged(event) {
-    const global = getStylesFromPopup();
-    const message = { "action": "update", "global": global };
-    const form = document.querySelector("#style-controls");
-    const formData = new FormData(form);
-    console.log(formData)
-
-    for (const [k, v] of formData) {
-        console.log(k, v);
+async function applyChanges() {
+    const styles = {};
+    for (const prop in selectors) {
+        const value = document.querySelector(selectors[prop]["value"])?.value;
+        const unit = document.querySelector(selectors[prop]["unit"])?.value;
+        styles[prop] = value + unit;
     }
 
-    const response = await chrome.tabs.sendMessage(tab.id, message);
-    if (response?.error) throw new Error(response.error);
+    const global = { "global": styles };
+
+    const response = await chrome.tabs.sendMessage(tab.id, global);
+    if (response?.error)
+        throw new Error(response.error);
+
+    chrome.storage.local.set(global);
 }
 
 document.querySelector("#toggle-extension").addEventListener("change", handleToggleExtension);
+document.querySelector("#apply-btn").addEventListener("click", applyChanges);
 
 // DEBUG
 // document.querySelector("#clear").addEventListener("click", clearStorage);
