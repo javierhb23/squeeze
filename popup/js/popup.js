@@ -1,63 +1,143 @@
 import "./utils.js"
 import "./bootstrap.min.js"
-import { getStylesFromPopup, registerMockURLs, clearStorage, Site, selectors } from "./utils.js";
+import { Site } from "./utils.js";
 
-const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-const { sites } = await chrome.storage.local.get("sites");
+document.addEventListener("DOMContentLoaded", async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const { sites } = await chrome.storage.local.get("sites");
 
-let isInStorage = false;
-let matchingUrl;
+    // TODO: This will only find the first site that matches with a URL, it will not look for more
+    // specific URLs in case there is more than one.
+    /** @type {Site|undefined} - Either a Site if its url matches one of the 'sites' or undefined */
+    const matchingSite = findSiteByURL(tab.url, sites);
 
-function onOpenPopup() {
-    const urls = sites.map((site) => site.url);
-    retrieveMatchingURL(urls);
-    displayStoredSites(urls);
-    retrieveConfig();
+    filloutPopup(tab.url, matchingSite);
+    displayStoredSites(sites);
+
+    document.querySelector("#toggle-site").addEventListener("change", (event) => siteSwitchToggled(event, tab));
+    document.querySelector("#apply-btn").addEventListener("click", () => applyButtonClicked(tab));
+});
+
+async function siteSwitchToggled(event, tab) {
+    // Ensure updated value for sites
+    const { sites } = await chrome.storage.local.get("sites");
+
+    const enabled = event.target.checked;
+    if (enabled) {
+        const matchingSite = findSiteByURL(tab.url, sites);
+        // Add this site to storage if it didn't match any URL from 'sites'
+        if (!matchingSite) {
+            const url = document.querySelector("#url").value;
+            // Use the URL provided on input field
+            sites.push(new Site(url));
+            chrome.storage.local.set({ "sites": sites });
+            displayStoredSites(sites);
+        }
+
+        messageContentScript(tab.id, {
+            "action": "enable",
+            "styles": getStylesFromPopup()
+        });
+    } else {
+        messageContentScript(tab.id, {
+            "action": "disable"
+        });
+    }
 }
 
-async function retrieveConfig() {
-    // Extension switch
-    const { enabled } = await chrome.storage.local.get("enabled");
-    document.querySelector("#toggle-extension").checked = enabled;
-
-    // Global styles
-    const { global } = await chrome.storage.local.get("global");
-    for (const prop in selectors) {
-        const valueField = document.querySelector(selectors[prop]["value"]);
-        const unitField = document.querySelector(selectors[prop]["unit"]);
-        const [value, unit] = global[prop].match(/(\d+)(\D+)/).splice(1);
-        valueField.value = value;
-        unitField.value = unit;
+function applyButtonClicked(tab) {
+    const siteToggle = document.querySelector("#toggle-site")
+    if (siteToggle.checked) {
+        const styles = getStylesFromPopup();
+        chrome.storage.local.set({ "global": styles });
+        messageContentScript(tab.id, {
+            "action": "update",
+            "styles": getStylesFromPopup()
+        });
+    } else {
+        siteToggle.checked = true;
     }
+}
 
-    document.querySelectorAll(".control").forEach((input) => {
-        input.addEventListener("input", () => {
-            document.querySelector("#apply-btn").disabled = false;
+function messageContentScript(tabId, message) {
+    try {
+        chrome.tabs.sendMessage(tabId, message).then(response => {
+            if (response?.error) throw new Error(response.error);
+        })
+    } catch (error) {
+        debugger;
+    }
+}
+
+/**
+ * Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
+ * numeric and unit portion in the popup window's style control fields.
+ */
+const SELECTORS = {
+    "max-width": { "value": "#max-width", "unit": "#max-width-unit" },
+    "margin-left": { "value": "#margin-left", "unit": "#margin-left-unit" }
+};
+
+/**
+ * Takes values from popup style fields and returns an oject with mappings of
+ *     <css_prop>: <css_value>
+ * for each style field as expected by the style related keys in storage e.g: "global" (in the
+ * future also for each Site's "specific" key in later versions).
+ */
+function getStylesFromPopup() {
+    const styles = {};
+    for (const prop in SELECTORS) {
+        const numberField = document.querySelector(SELECTORS[prop]["value"]);
+        const unitField = document.querySelector(SELECTORS[prop]["unit"]);
+        styles[prop] = numberField.value + unitField.value;
+    }
+    return styles;
+}
+
+/** 
+ * Retrieves relevant data from storage into popup window.
+ * @param {string} tabURL - Current tab's URL
+ * @param {Site|undefined} site - A Site with a matching URL from the ones in storage, if any.
+ */
+function filloutPopup(tabURL, site) {
+    // "Enabled for this site" switch
+    document.querySelector("#toggle-site").checked = site?.enabled ?? false;
+    document.querySelector("#url").value = site?.url ?? tabURL; // URL field
+
+    // Retrieve styles from 'global' into control fields
+    chrome.storage.local.get("global").then(({ global }) => {
+        for (const prop in SELECTORS) {
+            // Split style into numeric and unit (non-numeric) variables
+            const [number, unit] = global[prop].match(/(\d+)(\D+)/).splice(1);
+            const numberField = document.querySelector(SELECTORS[prop]["value"]);
+            const unitField = document.querySelector(SELECTORS[prop]["unit"]);
+            numberField.value = number;
+            unitField.value = unit;
+        }
+
+        // Undisable apply button on input events on style fields
+        document.querySelectorAll(".control").forEach((input) => {
+            input.addEventListener("input", () => {
+                document.querySelector("#apply-btn").disabled = false;
+            });
         });
     });
 }
 
-function retrieveMatchingURL(urls) {
-    for (const url of urls) {
-        isInStorage = new RegExp(url.replace("*", ".*")).test(tab.url);
-        if (isInStorage) {
-            matchingUrl = url;
-            break;
-        }
-    }
-    document.querySelector("#url").value = matchingUrl ?? tab.url;
-}
-
-function displayStoredSites(urls) {
+/** 
+ * Lists all stored sites as URLs on 'Sites' tabpanel.
+ * @param {Array<Site>} sites
+ */
+function displayStoredSites(sites) {
     const ul = document.querySelector("#sites-list-group");
     const template = document.querySelector("#site-list-item-template");
 
     const listItems = [];
 
-    for (const url of urls) {
+    for (const site of sites) {
         const li = template.content.cloneNode(true);
         const span = li.querySelector("span");
-        span.innerHTML = url;
+        span.innerHTML = site.url;
         listItems.push(li)
     }
 
@@ -69,81 +149,24 @@ function displayStoredSites(urls) {
         ul.appendChild(li);
     }
 
-    document.querySelectorAll("#remove-site-btn").forEach((btn) => {
-        btn.addEventListener("click", handleRemoveSiteButton);
+    // Define Remove site ('x') button behavior on each list element
+    document.querySelectorAll(".remove-site-btn").forEach((btn) => {
+        btn.addEventListener("click", async (event) => {
+            const li = event.target.parentNode;
+            const url = li.querySelector(".url-span").innerHTML;
+            // 'sites' must be updated each time a site is removed
+            const { sites } = await chrome.storage.local.get("sites");
+            chrome.storage.local.set({
+                "sites": sites.filter((site) => site.url !== url)
+            });
+            li.remove();
+        });
     });
 }
 
-async function handleRemoveSiteButton(event) {
-    const li = event.target.parentNode;
-    const url = li.querySelector("span[name=url-span]").innerHTML;
-    const { sites } = await chrome.storage.local.get("sites");
-
-    const index = sites.findIndex((site) => site.url === url);
-
-    if (index > -1) {
-        await chrome.storage.local.set({ "sites": sites.splice(index, 1) });
-        li.remove();
-    }
+function findSiteByURL(url, sites) {
+    return sites.find((site) => {
+        const pattern = site?.url.replaceAll("*", ".*"); // Use '*' for glob-matching
+        return RegExp(pattern).test(url);
+    });
 }
-
-async function handleToggleExtension(event) {
-    const enabled = event.target.checked;
-    if (enabled) {
-        if (isInStorage) {
-            // TODO: If 'enable' and site in sites
-            console.log(tab.url, "already in sites");
-        } else {
-            // TODO: If 'enable' and site not in sites: add URL to sites
-            const { sites } = await chrome.storage.local.get("sites");
-            const site = new Site(tab.url);
-            sites.push(site);
-            chrome.storage.local.set({ "sites": sites });
-        }
-
-        const action = "enable";
-        const message = { "action": action };
-        const response = await chrome.tabs.sendMessage(tab.id, message);
-        if (response?.error) throw new Error(response.error);
-
-    } else {
-        if (isInStorage) {
-            // TODO: If 'disable' and site in sites
-
-        } else {
-            // TODO: If 'disable' and site not in sites
-
-        }
-    }
-
-    const action = enabled ? "enable" : "disable";
-    const message = { "action": action };
-    const response = await chrome.tabs.sendMessage(tab.id, message);
-    if (response?.error) throw new Error(response.error);
-}
-
-async function applyChanges() {
-    const styles = {};
-    for (const prop in selectors) {
-        const value = document.querySelector(selectors[prop]["value"])?.value;
-        const unit = document.querySelector(selectors[prop]["unit"])?.value;
-        styles[prop] = value + unit;
-    }
-
-    const global = { "global": styles };
-
-    const response = await chrome.tabs.sendMessage(tab.id, global);
-    if (response?.error)
-        throw new Error(response.error);
-
-    chrome.storage.local.set(global);
-}
-
-document.querySelector("#toggle-extension").addEventListener("change", handleToggleExtension);
-document.querySelector("#apply-btn").addEventListener("click", applyChanges);
-
-// DEBUG
-// document.querySelector("#clear").addEventListener("click", clearStorage);
-document.querySelector("#mock").addEventListener("click", registerMockURLs);
-
-onOpenPopup();
