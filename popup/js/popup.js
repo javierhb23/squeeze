@@ -130,23 +130,16 @@ function filloutPopup(tabURL, site) {
  */
 function displayStoredSites(sites) {
     const ul = document.querySelector("#sites-list-group");
+
+    // Remove existing 'li' elements
+    ul.querySelectorAll("li").forEach(li => li.remove());
+
     const template = document.querySelector("#site-list-item-template");
-
-    const listItems = [];
-
     for (const site of sites) {
         const li = template.content.cloneNode(true);
         const span = li.querySelector("span");
         span.innerHTML = site.url;
-        listItems.push(li)
-    }
-
-    while (ul.firstChild) {
-        ul.removeChild(ul.firstChild);
-    }
-
-    for (const li of listItems) {
-        ul.appendChild(li);
+        ul.appendChild(li)
     }
 
     // Define Remove site ('x') button behavior on each list element
