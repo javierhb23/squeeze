@@ -6,9 +6,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const { sites } = await chrome.storage.local.get("sites");
 
-    // TODO: This will only find the first site that matches with a URL, it will not look for more
-    // specific URLs in case there is more than one.
-    /** @type {Site|undefined} - Either a Site if its url matches one of the 'sites' or undefined */
     const matchingSite = findSiteByURL(tab.url, sites);
 
     filloutPopup(tab.url, matchingSite);
@@ -158,6 +155,16 @@ function displayStoredSites(sites) {
     });
 }
 
+/**
+ * Look for a URL in the given sites array.
+ *
+ * @param {string} url - The URL to be searched for
+ * @param {Array<Site>} sites - A list of sites to look through
+ * @returns {Site|undefined} - Either a Site if its url matches one of the 'sites' or undefined
+ *
+ * TODO: This will return the first site that matches with a URL; it will stop looking for more
+ * URLs even if there is a more specific one for the given URL.
+ */
 function findSiteByURL(url, sites) {
     return sites.find((site) => {
         const pattern = site?.url.replaceAll("*", ".*"); // Use '*' for glob-matching
