@@ -20,25 +20,20 @@ async function siteSwitchToggled(event, tab) {
     const { sites } = await chrome.storage.local.get("sites");
 
     const enabled = event.target.checked;
+    const styles = enabled ? getStylesFromPopup() : null;
+    // Ask the content script to apply these styles
+    chrome.tabs.sendMessage(tab.id, { "styles": styles });
+
+    // Additionally if enabled, add this site if it didn't match any URL from storage
     if (enabled) {
-        const matchingSite = findSiteByURL(tab.url, sites);
-        // Add this site to storage if it didn't match any URL from 'sites'
+        const url = document.querySelector("#url").value;
+        const matchingSite = findSiteByURL(url, sites);
         if (!matchingSite) {
-            const url = document.querySelector("#url").value;
             // Use the URL provided on input field
             sites.push(new Site(url));
             chrome.storage.local.set({ "sites": sites });
             displayStoredSites(sites);
         }
-
-        messageContentScript(tab.id, {
-            "action": "enable",
-            "styles": getStylesFromPopup()
-        });
-    } else {
-        messageContentScript(tab.id, {
-            "action": "disable"
-        });
     }
 }
 
@@ -46,25 +41,13 @@ function applyButtonClicked(tab) {
     const siteToggle = document.querySelector("#toggle-site")
     if (siteToggle.checked) {
         const styles = getStylesFromPopup();
+        // Ask the content script to apply these styles
+        chrome.tabs.sendMessage(tab.id, { "styles": styles });
+        // Save these new values into the global styles key
         chrome.storage.local.set({ "global": styles });
-        messageContentScript(tab.id, {
-            "action": "update",
-            "styles": getStylesFromPopup()
-        });
-    } else {
-        siteToggle.checked = true;
     }
 }
 
-function messageContentScript(tabId, message) {
-    try {
-        chrome.tabs.sendMessage(tabId, message).then(response => {
-            if (response?.error) throw new Error(response.error);
-        })
-    } catch (error) {
-        debugger;
-    }
-}
 
 /**
  * Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
