@@ -149,10 +149,11 @@ function displayStoredSites(sites) {
             const url = li.querySelector(".url-span").innerHTML;
             // 'sites' must be updated each time a site is removed
             const { sites } = await chrome.storage.local.get("sites");
-            chrome.storage.local.set({
-                "sites": sites.filter((site) => site.url !== url)
-            });
-            li.remove();
+            const index = sites.findIndex((site) => site.url === url);
+            if (index > -1) {
+                chrome.storage.local.set({ "sites": sites.toSpliced(index, 1) });
+                li.remove();
+            }
         });
     });
 }
