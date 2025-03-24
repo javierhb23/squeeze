@@ -1,39 +1,37 @@
-import "./utils.js"
 import "./bootstrap.min.js"
-import { Site } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const { sites } = await chrome.storage.local.get("sites");
-
-    const matchingSite = findSiteByURL(tab.url, sites);
-
+    const matchingSite = await chrome.runtime.sendMessage({ "queryURL": tab.url });
     filloutPopup(tab.url, matchingSite);
-    displayStoredSites(sites);
 
-    document.querySelector("#toggle-site").addEventListener("change", (event) => siteSwitchToggled(event, tab));
-    document.querySelector("#apply-btn").addEventListener("click", () => applyButtonClicked(tab));
+    document.querySelector("#toggle-enabled")
+        .addEventListener("change", (event) => enableSwitchToggled(event, tab));
+
+    document.querySelector("#toggle-site")
+        .addEventListener("change", (event) => siteSwitchToggled(event, tab));
+
+    document.querySelector("#apply-btn")
+        .addEventListener("click", () => applyButtonClicked(tab));
 });
 
+function enableSwitchToggled(event, tab) {
+    chrome.runtime.sendMessage({
+        enable: event.target.checked,
+        tabId: tab.id
+    });
+}
+
 async function siteSwitchToggled(event, tab) {
-    // Ensure updated value for sites
-    const { sites } = await chrome.storage.local.get("sites");
-
     const enabled = event.target.checked;
-    const styles = enabled ? getStylesFromPopup() : null;
-    // Ask the content script to apply these styles
-    chrome.tabs.sendMessage(tab.id, { "styles": styles });
 
-    // Additionally if enabled, add this site if it didn't match any URL from storage
+    // If enabled, add this site if it didn't match any URL from storage
     if (enabled) {
         const url = document.querySelector("#url").value;
-        const matchingSite = findSiteByURL(url, sites);
-        if (!matchingSite) {
-            // Use the URL provided on input field
-            sites.push(new Site(url));
-            chrome.storage.local.set({ "sites": sites });
-            displayStoredSites(sites);
-        }
+        const { sites } = await chrome.runtime.sendMessage({ addSite: url });
+        displayStoredSites(sites);
+    } else {
+        chrome.runtime.sendMessage({ removeSite: url });
     }
 }
 
@@ -47,7 +45,6 @@ function applyButtonClicked(tab) {
         chrome.storage.local.set({ "global": styles });
     }
 }
-
 
 /**
  * Each key is the name of a CSS property. Their values are composed of the HTML id's for both the

@@ -10,10 +10,14 @@
 </head>
 
 <body>
-    <header class="d-flex align-items-center">
+    <header>
+        <div class="form-check form-switch me-auto">
+            <input class="form-check-input" type="checkbox" role="switch" id="toggle-enabled">
+            <label class="form-check-label" for="toggle-enabled">Enable</label>
+        </div>
         <div class="form-check form-switch me-auto">
             <input class="form-check-input" type="checkbox" role="switch" id="toggle-site">
-            <label class="form-check-label" for="toggle-site">Enable on this URL</label>
+            <label class="form-check-label" for="toggle-site">Always enable on this URL</label>
         </div>
     </header>
     <main>
