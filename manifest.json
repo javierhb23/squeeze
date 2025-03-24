@@ -3,7 +3,7 @@
     "manifest_version": 3,
     "version": "0.1",
     "description": "Make old-school websites readable on wide displays by limiting their width",
-    "permissions": ["activeTab", "scripting", "storage"],
+    "permissions": ["activeTab", "scripting", "storage", "webNavigation"],
     "action": {
         "default_popup": "popup/popup.html"
     },

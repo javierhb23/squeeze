@@ -127,30 +127,8 @@ function displayStoredSites(sites) {
         btn.addEventListener("click", async (event) => {
             const li = event.target.parentNode;
             const url = li.querySelector(".url-span").innerHTML;
-            // 'sites' must be updated each time a site is removed
-            const { sites } = await chrome.storage.local.get("sites");
-            const index = sites.findIndex((site) => site.url === url);
-            if (index > -1) {
-                chrome.storage.local.set({ "sites": sites.toSpliced(index, 1) });
-                li.remove();
-            }
+            const { sites } = await chrome.runtime.sendMessage({ removeSite: url });
+            displayStoredSites(sites);
         });
-    });
-}
-
-/**
- * Look for a URL in the given sites array.
- *
- * @param {string} url - The URL to be searched for
- * @param {Array<Site>} sites - A list of sites to look through
- * @returns {Site|undefined} - Either a Site if its url matches one of the 'sites' or undefined
- *
- * TODO: This will return the first site that matches with a URL; it will stop looking for more
- * URLs even if there is a more specific one for the given URL.
- */
-function findSiteByURL(url, sites) {
-    return sites.find((site) => {
-        const pattern = site?.url.replaceAll("*", ".*"); // Use '*' for glob-matching
-        return RegExp(pattern).test(url);
     });
 }
