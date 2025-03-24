@@ -79,29 +79,31 @@ function getStylesFromPopup() {
  * @param {string} tabURL - Current tab's URL
  * @param {Site|undefined} site - A Site with a matching URL from the ones in storage, if any.
  */
-function filloutPopup(tabURL, site) {
+async function filloutPopup(tabURL, site) {
     // "Enabled for this site" switch
     document.querySelector("#toggle-site").checked = site?.enabled ?? false;
     document.querySelector("#url").value = site?.url ?? tabURL; // URL field
 
     // Retrieve styles from 'global' into control fields
-    chrome.storage.local.get("global").then(({ global }) => {
-        for (const prop in SELECTORS) {
-            // Split style into numeric and unit (non-numeric) variables
-            const [number, unit] = global[prop].match(/(\d+)(\D+)/).splice(1);
-            const numberField = document.querySelector(SELECTORS[prop]["value"]);
-            const unitField = document.querySelector(SELECTORS[prop]["unit"]);
-            numberField.value = number;
-            unitField.value = unit;
-        }
+    const { global } = await chrome.storage.local.get("global");
+    for (const prop in SELECTORS) {
+        // Split style into numeric and unit (non-numeric) variables
+        const [number, unit] = global[prop].match(/(\d+)(\D+)/).splice(1);
+        const numberField = document.querySelector(SELECTORS[prop]["value"]);
+        const unitField = document.querySelector(SELECTORS[prop]["unit"]);
+        numberField.value = number;
+        unitField.value = unit;
+    }
 
-        // Undisable apply button on input events on style fields
-        document.querySelectorAll(".control").forEach((input) => {
-            input.addEventListener("input", () => {
-                document.querySelector("#apply-btn").disabled = false;
-            });
+    // Undisable apply button on input events on style fields
+    document.querySelectorAll(".control").forEach((input) => {
+        input.addEventListener("input", () => {
+            document.querySelector("#apply-btn").disabled = false;
         });
     });
+
+    const { sites } = await chrome.storage.local.get("sites");
+    displayStoredSites(sites);
 }
 
 /** 
