@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function popup() {
     const response = {};
     try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const tab = await getTab();
         const { sites, globalStyles } = await chrome.storage.local.get();
         if (!tab) throw new Error("Could not get active tab");
         if (!tab.url) throw new Error("Could not get tab's URL");
@@ -55,6 +55,13 @@ async function popup() {
         response.error = e;
     }
     return response;
+}
+
+/** Equivalent chrome.tabs.query({ active: true, lastFocusedWindow: true }) */
+async function getTab() {
+    const lastFocusedWindow = await chrome.windows.getLastFocused();
+    const tabs = await chrome.tabs.query({ active: true });
+    return tabs.find(t => t.windowId === lastFocusedWindow.id);
 }
 
 /**
