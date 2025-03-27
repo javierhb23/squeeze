@@ -1,68 +1,66 @@
+class Site {
+    constructor(url, enabled = true, useOwnStyles = false, styles = {}) {
+        this.url = url;
+        this.enabled = enabled;
+        this.useOwnStyles = useOwnStyles;
+        this.styles = styles
+    }
+}
+
 // Set defaults
 chrome.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') {
         chrome.storage.local.set({
-            "global": {
-                "max-width": "1000px",
-                "margin-left": "200px"
+            globalStyles: {
+                maxWidth: "1000px",
+                marginLeft: "200px"
             },
-            "sites": []
+            sites: []
         });
     }
 });
 
-// Apply global styles on page load if site matches a storage URL
+// Apply globalStyles styles on page load if site matches a storage URL
 chrome.webNavigation.onCompleted.addListener(async ({ url, tabId }) => {
-    const matchingSite = await getSite(url);
+    const { sites, globalStyles } = await chrome.storage.local.get();
+    const matchingSite = getMatchingSite(url, sites);
     if (matchingSite) {
-        const { global } = await chrome.storage.local.get("global");
-        try {
-            chrome.tabs.sendMessage(tabId, { styles: global });
-        } catch (error) {
-            console.log(error);
-        }
+        const styles = matchingSite.useOwnStyles ? matchingSite.styles : globalStyles;
+        chrome.tabs.sendMessage(tabId, { styles: styles });
     }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    const hasProperties = (obj, ...props) => props.every(prop => Object.hasOwn(obj, prop));
-
-    if (hasProperties(request, "enable", "tabId")) {
-        applyStyles(request.enable, request.tabId);
+    if (request.action === "popup") {
+        popup().then(sendResponse);
     }
-
-    if (request.queryURL) {
-        getSite(request.queryURL).then(site => sendResponse(site));
-    }
-
-    if (request.addSite) {
-        addSite(request.addSite).then(sites => sendResponse(sites));
-    }
-
-    if (hasProperties(request, "updateSite", "newValue")) {
-        updateSite(request.updateSite, request.newValue).then(sites => sendResponse(sites));
-    }
-
-    if (hasProperties(request, "removeSite")) {
-        removeSite(request.removeSite).then(sites => sendResponse(sites));
-    }
-
     return true;
 });
 
-async function applyStyles(enable, tabId) {
-    if (enable) {
-        const { global } = await chrome.storage.local.get("global");
-        chrome.tabs.sendMessage(tabId, { styles: global });
-    } else {
-        chrome.tabs.sendMessage(tabId, { styles: null });
+async function popup() {
+    const response = {};
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const { sites, globalStyles } = await chrome.storage.local.get();
+        if (!tab) throw new Error("Could not get active tab");
+        if (!tab.url) throw new Error("Could not get tab's URL");
+        const matchingSite = getMatchingSite(tab.url, sites);
+        response.data = {
+            tabUrl: tab.url,
+            sites: sites,
+            matchingSite: matchingSite,
+            styles: matchingSite?.useOwnStyles ? matchingSite.styles : globalStyles
+        };
+    } catch (e) {
+        response.error = e;
     }
+    return response;
 }
 
 /**
- * Adds a new Site object to storage, checking first that no other site shares the same exact URL to
- * avoid duplicates. Returns a promise requesting the new value of 'sites' from storage in either
- * case.
+ * Adds a new Site to storage with a given URL if none matches exactly; otherwise, toggles the
+ * 'enabled' state of the matched Site to true. Returns a promise requesting the new value of
+ * 'sites' from storage in either case.
  *
  * @param {string} url - The url of the site to be added.
  * @returns {Promise<Array<Site>>} - A promise with the value of 'sites' from storage.
@@ -70,10 +68,13 @@ async function applyStyles(enable, tabId) {
 async function addSite(url) {
     // Add site to storage
     const { sites } = await chrome.storage.local.get("sites");
-    // Avoid duplicate URLs
-    const duplicateURL = sites.some((site) => site.url === url);
-    if (!duplicateURL)
-        sites.push({ url: url, enabled: true });
+    // Look for already existing site
+    const matchingSite = getMatchingSite(url, sites);
+    if (matchingSite) {
+        matchingSite.enabled = true;
+    } else {
+        sites.push(new Site(url));
+    }
 
     applyToAllTabsWithURL(url);
     await chrome.storage.local.set({ sites });
@@ -81,20 +82,19 @@ async function addSite(url) {
 }
 
 /**
- * Looks for a URL in the extension's local storage and returns a Promise resolving to a matching
- * Site if any, otherwise resolves undefined.
+ * Looks for a URL in the given list of sites and returns the best matching Site if any, otherwise
+ * returns undefined.
  *
  * @param {string} url - The URL to be searched for.
- * @returns {Promise<Site|undefined>} - A matching Site if successful.
+ * @param {Array<Site>} sites - A list of sites.
+ * @returns {Site|undefined} - The Site with the best matching URL or undefined if none matches.
  */
-function getSite(url) {
-    return chrome.storage.local.get("sites").then(({ sites }) => {
-        // TODO: Return most specific URL instead of first match
-        return sites.find((site) => {
-            const pattern = site.url.replaceAll("*", ".*"); // Use '*' for glob-matching
-            return RegExp(pattern).test(url);
-        });
-    });
+function getMatchingSite(url, sites) {
+    return sites.filter(site => {
+        const pattern = site.url.replaceAll("*", ".*"); // Use '*' for glob-matching
+        return RegExp(pattern).test(url);
+        // If more than one match, consider the Site with the longest URL as the best matching Site
+    }).toSorted((siteA, siteB) => siteA.url.length - siteB.url.length)[0];
 }
 
 /**
@@ -142,7 +142,7 @@ async function removeSite(url) {
  */
 async function applyToAllTabsWithURL(url) {
     const { sites } = await chrome.storage.local.get("sites");
-    const { global } = await chrome.storage.local.get("global");
+    const { globalStyles } = await chrome.storage.local.get("globalStyles");
     const tabs = await chrome.tabs.query({});
 
     for (const tab of tabs) {
@@ -154,7 +154,7 @@ async function applyToAllTabsWithURL(url) {
         state is false*/
         const styleThisTab = matchesURL(tab.url, url) && !matchesDisabledSite(tab.url, sites);
         if (styleThisTab) {
-            chrome.tabs.sendMessage(tab.id, { styles: global });
+            chrome.tabs.sendMessage(tab.id, { styles: globalStyles });
         }
     }
 }
