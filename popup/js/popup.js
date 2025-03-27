@@ -26,6 +26,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     chkEnable.addEventListener("change", enableSwitchToggled);
     chkSiteEnabled.addEventListener("change", siteSwitchToggled);
     btnApply.addEventListener("click", applyButtonClicked);
+    // Undisable apply button on input events on style fields
+    document.querySelectorAll(".control").forEach(input =>
+        input.addEventListener("input", () => btnApply.disabled = false));
 });
 
 /** Retrieves relevant data from storage into popup window. */
@@ -46,13 +49,6 @@ async function filloutPopup() {
         numberField.value = number;
         unitField.value = unit;
     }
-
-    // Undisable apply button on input events on style fields
-    document.querySelectorAll(".control").forEach((input) => {
-        input.addEventListener("input", () => {
-            btnApply.disabled = false;
-        });
-    });
 
     displayStoredSites(data.sites);
 }
