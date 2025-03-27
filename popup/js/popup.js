@@ -1,93 +1,48 @@
 import "./bootstrap.min.js"
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const matchingSite = await chrome.runtime.sendMessage({ "queryURL": tab.url });
-    filloutPopup(tab.url, matchingSite);
-
-    document.querySelector("#toggle-enabled")
-        .addEventListener("change", (event) => enableSwitchToggled(event, tab));
-
-    document.querySelector("#toggle-site")
-        .addEventListener("change", (event) => siteSwitchToggled(event, tab));
-
-    document.querySelector("#apply-btn")
-        .addEventListener("click", () => applyButtonClicked(tab));
-});
-
-function enableSwitchToggled(event, tab) {
-    chrome.runtime.sendMessage({
-        enable: event.target.checked,
-        tabId: tab.id
-    });
-}
-
-async function siteSwitchToggled(event, tab) {
-    const enabled = event.target.checked;
-
-    // If enabled, add this site if it didn't match any URL from storage
-    if (enabled) {
-        const url = document.querySelector("#url").value;
-        const { sites } = await chrome.runtime.sendMessage({ addSite: url });
-        displayStoredSites(sites);
-    } else {
-        chrome.runtime.sendMessage({ removeSite: url });
-    }
-}
-
-function applyButtonClicked(tab) {
-    const siteToggle = document.querySelector("#toggle-site")
-    if (siteToggle.checked) {
-        const styles = getStylesFromPopup();
-        // Ask the content script to apply these styles
-        chrome.tabs.sendMessage(tab.id, { "styles": styles });
-        // Save these new values into the global styles key
-        chrome.storage.local.set({ "global": styles });
-    }
-}
-
-/**
- * Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
- * numeric and unit portion in the popup window's style control fields.
- */
+/* Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
+numeric and unit portion in the popup window's style control fields. */
 const SELECTORS = {
-    "max-width": { "value": "#max-width", "unit": "#max-width-unit" },
-    "margin-left": { "value": "#margin-left", "unit": "#margin-left-unit" }
+    maxWidth: {
+        number: "#max-width",
+        unit: "#max-width-unit"
+    },
+    marginLeft: {
+        number: "#margin-left",
+        unit: "#margin-left-unit"
+    }
 };
 
-/**
- * Takes values from popup style fields and returns an oject with mappings of
- *     <css_prop>: <css_value>
- * for each style field as expected by the style related keys in storage e.g: "global" (in the
- * future also for each Site's "specific" key in later versions).
- */
-function getStylesFromPopup() {
-    const styles = {};
-    for (const prop in SELECTORS) {
-        const numberField = document.querySelector(SELECTORS[prop]["value"]);
-        const unitField = document.querySelector(SELECTORS[prop]["unit"]);
-        styles[prop] = numberField.value + unitField.value;
-    }
-    return styles;
-}
+const chkEnable = document.querySelector("#toggle-enabled");
+const chkSiteEnabled = document.querySelector("#toggle-site");
+const inpUrl = document.querySelector("#url");
+const btnApply = document.querySelector("#apply-btn");
+// const rdoStylesSource = document.querySelector("#styles-source");
+const iconBookmark = document.querySelector("#bookmark-icon");
+const ulSites = document.querySelector("#sites-list-group");
 
-/** 
- * Retrieves relevant data from storage into popup window.
- * @param {string} tabURL - Current tab's URL
- * @param {Site|undefined} site - A Site with a matching URL from the ones in storage, if any.
- */
-async function filloutPopup(tabURL, site) {
-    // "Enabled for this site" switch
-    document.querySelector("#toggle-site").checked = site?.enabled ?? false;
-    document.querySelector("#url").value = site?.url ?? tabURL; // URL field
+document.addEventListener("DOMContentLoaded", async () => {
+    filloutPopup();
+    chkEnable.addEventListener("change", enableSwitchToggled);
+    chkSiteEnabled.addEventListener("change", siteSwitchToggled);
+    btnApply.addEventListener("click", applyButtonClicked);
+});
 
-    // Retrieve styles from 'global' into control fields
-    const { global } = await chrome.storage.local.get("global");
-    for (const prop in SELECTORS) {
-        // Split style into numeric and unit (non-numeric) variables
-        const [number, unit] = global[prop].match(/(\d+)(\D+)/).splice(1);
-        const numberField = document.querySelector(SELECTORS[prop]["value"]);
-        const unitField = document.querySelector(SELECTORS[prop]["unit"]);
+/** Retrieves relevant data from storage into popup window. */
+async function filloutPopup() {
+    const response = await chrome.runtime.sendMessage({ action: "popup" });
+    const data = response.data;
+
+    chkSiteEnabled.checked = data?.matchingSite?.enabled ?? false;
+    chkEnable.checked = chkSiteEnabled.checked;
+    inpUrl.value = data?.matchingSite?.url ?? data.tabUrl;
+    iconBookmark.className = data?.matchingSite ? 'bi-bookmark-check-fill' : 'bi-bookmark';
+
+    // Fill out style fields
+    for (const prop in data.styles) {
+        const [number, unit] = data.styles[prop].match(/(\d+)(\D+)/).splice(1);
+        const numberField = document.querySelector(SELECTORS[prop].number);
+        const unitField = document.querySelector(SELECTORS[prop].unit);
         numberField.value = number;
         unitField.value = unit;
     }
@@ -95,30 +50,27 @@ async function filloutPopup(tabURL, site) {
     // Undisable apply button on input events on style fields
     document.querySelectorAll(".control").forEach((input) => {
         input.addEventListener("input", () => {
-            document.querySelector("#apply-btn").disabled = false;
+            btnApply.disabled = false;
         });
     });
 
-    const { sites } = await chrome.storage.local.get("sites");
-    displayStoredSites(sites);
+    displayStoredSites(data.sites);
 }
 
-/** 
+/**
  * Lists all stored sites as URLs on 'Sites' tabpanel.
  * @param {Array<Site>} sites
  */
 function displayStoredSites(sites) {
-    const ul = document.querySelector("#sites-list-group");
-
     // Remove existing 'li' elements
-    ul.querySelectorAll("li").forEach(li => li.remove());
+    ulSites.querySelectorAll("li").forEach(li => li.remove());
 
     const template = document.querySelector("#site-list-item-template");
     for (const site of sites) {
         const li = template.content.cloneNode(true);
         const span = li.querySelector("span");
         span.innerHTML = site.url;
-        ul.appendChild(li)
+        ulSites.appendChild(li)
     }
 
     // Define Remove site ('x') button behavior on each list element
@@ -130,4 +82,28 @@ function displayStoredSites(sites) {
             displayStoredSites(sites);
         });
     });
+}
+
+
+function enableSwitchToggled(event) {
+    chrome.runtime.sendMessage({ enable: event.target.checked });
+}
+
+async function siteSwitchToggled(event) {
+    const enabled = event.target.checked;
+    const response = await chrome.runtime.sendMessage({ });
+}
+
+function applyButtonClicked() {
+    // chrome.runtime.sendMessage({ action: "update", data: popupData });
+}
+
+function getStylesFromPopup() {
+    const styles = {};
+    for (const prop in SELECTORS) {
+        const numberField = document.querySelector(SELECTORS[prop]["number"]);
+        const unitField = document.querySelector(SELECTORS[prop]["unit"]);
+        styles[prop] = numberField.value + unitField.value;
+    }
+    return styles;
 }
