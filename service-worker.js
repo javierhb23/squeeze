@@ -187,10 +187,5 @@ function matchesURL(url, pattern) {
  * @returns {boolean}
  */
 function matchesDisabledSite(url, sites) {
-    for (const site of sites) {
-        if (matchesURL(url, site.url) && site.enabled === false)
-            return true;
-    }
-    return false;
+    return sites.some(site => matchesURL(url, site.url) && site.enabled === false)
 }
-
