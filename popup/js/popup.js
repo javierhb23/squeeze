@@ -1,4 +1,9 @@
-import "./bootstrap.min.js"
+const chkEnable = document.querySelector("#toggle-enabled");
+const chkSiteEnabled = document.querySelector("#toggle-site");
+const inpUrl = document.querySelector("#url");
+const btnApply = document.querySelector("#apply-btn");
+const iconBookmark = document.querySelector("#bookmark-icon");
+const ulSites = document.querySelector("#sites-list-group");
 
 /* Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
 numeric and unit portion in the popup window's style control fields. */
@@ -13,14 +18,6 @@ const SELECTORS = {
     }
 };
 
-const chkEnable = document.querySelector("#toggle-enabled");
-const chkSiteEnabled = document.querySelector("#toggle-site");
-const inpUrl = document.querySelector("#url");
-const btnApply = document.querySelector("#apply-btn");
-// const rdoStylesSource = document.querySelector("#styles-source");
-const iconBookmark = document.querySelector("#bookmark-icon");
-const ulSites = document.querySelector("#sites-list-group");
-
 document.addEventListener("DOMContentLoaded", async () => {
     filloutPopup();
     chkEnable.addEventListener("change", enableSwitchToggled);
@@ -34,23 +31,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup() {
     const response = await chrome.runtime.sendMessage({ action: "popup" });
-    const data = response.data;
-
-    chkSiteEnabled.checked = data?.matchingSite?.enabled ?? false;
+    const { tabUrl, styles, sites, matchingSite } = response.data;
+    chkSiteEnabled.checked = matchingSite?.enabled ?? false;
     chkEnable.checked = chkSiteEnabled.checked;
-    inpUrl.value = data?.matchingSite?.url ?? data.tabUrl;
-    iconBookmark.className = data?.matchingSite ? 'bi-bookmark-check-fill' : 'bi-bookmark';
+    inpUrl.value = matchingSite?.url ?? tabUrl;
+    iconBookmark.className = matchingSite ? 'bi-bookmark-check-fill' : 'bi-bookmark';
 
     // Fill out style fields
-    for (const prop in data.styles) {
-        const [number, unit] = data.styles[prop].match(/(\d+)(\D+)/).splice(1);
+    for (const prop in styles) {
+        const [number, unit] = styles[prop].match(/(\d+)(\D+)/).splice(1);
         const numberField = document.querySelector(SELECTORS[prop].number);
         const unitField = document.querySelector(SELECTORS[prop].unit);
         numberField.value = number;
         unitField.value = unit;
     }
 
-    displayStoredSites(data.sites);
+    displayStoredSites(sites);
 }
 
 /**
@@ -80,14 +76,21 @@ function displayStoredSites(sites) {
     });
 }
 
-
 function enableSwitchToggled(event) {
-    chrome.runtime.sendMessage({ enable: event.target.checked });
+    chrome.runtime.sendMessage({
+        action: "enable_switch_toggled",
+        checked: event.target.checked
+    });
 }
 
 async function siteSwitchToggled(event) {
-    const enabled = event.target.checked;
-    const response = await chrome.runtime.sendMessage({ });
+    const response = await chrome.runtime.sendMessage({
+        action: "site_switch_toggled",
+        checked: event.target.checked,
+        url: inpUrl.value
+    });
+    const { sites } = response.data;
+    displayStoredSites(sites);
 }
 
 function applyButtonClicked() {
