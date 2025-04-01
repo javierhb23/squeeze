@@ -34,6 +34,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "popup") {
         popup().then(sendResponse);
     }
+    if (request.action === "enable_switch_toggled") {
+        enableSwitchToggled(request.checked) // No response needed
+    }
     if (request.action === "site_switch_toggled") {
         siteSwitchToggled(request.url, request.checked).then(sendResponse);
     }
@@ -58,6 +61,16 @@ async function popup() {
         response.error = e.message;
     }
     return response;
+}
+
+async function enableSwitchToggled(checked) {
+    const { sites, globalStyles } = await chrome.storage.local.get(["sites", "globalStyles"]);
+    const tab = await getTab();
+    const matchingSite = getMatchingSite(tab.url, sites);
+    const styles = checked
+        ? (matchingSite?.useOwnStyles ? matchingSite.styles : globalStyles)
+        : null;
+    chrome.tabs.sendMessage(tab.id, { styles: styles });
 }
 
 /** Equivalent chrome.tabs.query({ active: true, lastFocusedWindow: true }) */
