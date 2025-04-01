@@ -7,13 +7,14 @@
     <link href="css/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="css/popup.css" rel="stylesheet">
     <script src="js/popup.js" type="module"></script>
+    <script src="js/bootstrap.min.js" type="module"></script>
 </head>
 
 <body>
     <header>
         <div class="form-check form-switch me-auto">
             <input class="form-check-input" type="checkbox" role="switch" id="toggle-enabled">
-            <label class="form-check-label" for="toggle-enabled">Enable</label>
+            <label class="form-check-label" for="toggle-enabled">Enable on this page</label>
         </div>
         <div class="form-check form-switch me-auto">
             <input class="form-check-input" type="checkbox" role="switch" id="toggle-site">
@@ -22,8 +23,8 @@
     </header>
     <main>
         <div class="input-group">
-            <span class="input-group-text">URL</span>
-            <input class="form-control" id="url">
+            <input class="form-control" id="url" placeholder="URL">
+            <span class="input-group-text"><i class="bi-bookmark" id="bookmark-icon"></i></span>
         </div>
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -71,7 +72,7 @@
                     <button class="btn btn-success" id="apply-btn" type="button" disabled>Apply</button>
                 </form>
             </section>
-            <section class="tab-pane fade" id="sites-tab-pane" role="tabpanel" tabindex="0">
+            <section class="tab-pane fade" id="sites-tab-pane" role="tabpanel" tabindex="1">
                 <template id="site-list-item-template">
                     <li class="list-group-item list-group-item-action d-flex">
                         <span class="me-auto url-span"></span>
