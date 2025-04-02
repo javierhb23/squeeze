@@ -40,25 +40,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "site_switch_toggled") {
         siteSwitchToggled(request.url, request.checked).then(sendResponse);
     }
+    if (request.action === "remove_site_clicked") {
+        removeSiteClicked(request.url).then(sendResponse);
+    }
     return true;
 });
 
 async function popup() {
     const response = {};
-    try {
-        const tab = await getTab();
-        const { sites, globalStyles } = await chrome.storage.local.get();
-        if (!tab) throw new Error("Could not get active tab");
-        if (!tab.url) throw new Error("Could not get tab's URL");
-        const matchingSite = getMatchingSite(tab.url, sites);
-        response.data = {
-            tabUrl: tab.url,
-            sites: sites,
-            matchingSite: matchingSite,
-            styles: matchingSite?.useOwnStyles ? matchingSite?.styles : globalStyles
-        };
-    } catch (e) {
-        response.error = e.message;
+    const tab = await getTab();
+    const { sites, globalStyles } = await chrome.storage.local.get();
+    if (!tab) throw new Error("Could not get active tab");
+    if (!tab.url) throw new Error("Could not get tab's URL");
+    const matchingSite = getMatchingSite(tab.url, sites);
+    response.data = {
+        tabUrl: tab.url,
+        sites: sites,
+        matchingSite: matchingSite,
+        styles: matchingSite?.useOwnStyles ? matchingSite?.styles : globalStyles
+    };
+    return response;
+}
     }
     return response;
 }
