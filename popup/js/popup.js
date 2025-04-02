@@ -70,8 +70,11 @@ function displayStoredSites(sites) {
         btn.addEventListener("click", async (event) => {
             const li = event.target.parentNode;
             const url = li.querySelector(".url-span").innerHTML;
-            const { sites } = await chrome.runtime.sendMessage({ removeSite: url });
-            displayStoredSites(sites);
+            const response = await chrome.runtime.sendMessage({
+                action: "remove_site_clicked",
+                url: url
+            });
+            filloutPopup();
         });
     });
 }
@@ -89,8 +92,7 @@ async function siteSwitchToggled(event) {
         checked: event.target.checked,
         url: inpUrl.value
     });
-    const { sites } = response.data;
-    displayStoredSites(sites);
+    filloutPopup();
 }
 
 async function applyButtonClicked() {
