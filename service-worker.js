@@ -23,7 +23,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 // Apply globalStyles styles on page load if site matches a storage URL
 chrome.webNavigation.onCompleted.addListener(async ({ url, tabId }) => {
     const { sites, globalStyles } = await chrome.storage.local.get();
-    const matchingSite = getMatchingSite(url, sites);
+    const matchingSite = getMatchingSite(sites, url);
     if (matchingSite?.enabled) {
         const styles = matchingSite.useOwnStyles ? matchingSite.styles : globalStyles;
         chrome.tabs.sendMessage(tabId, { styles: styles });
@@ -52,7 +52,7 @@ async function popup() {
     const { sites, globalStyles } = await chrome.storage.local.get();
     if (!tab) throw new Error("Could not get active tab");
     if (!tab.url) throw new Error("Could not get tab's URL");
-    const matchingSite = getMatchingSite(tab.url, sites);
+    const matchingSite = getMatchingSite(sites, tab.url);
     response.data = {
         tabUrl: tab.url,
         sites: sites,
@@ -61,6 +61,12 @@ async function popup() {
     };
     return response;
 }
+
+async function removeSiteClicked(url) {
+    const { sites } = await chrome.storage.local.get("sites");
+    const response = {};
+    response.data = {
+        sites: removeSite(sites, url)
     }
     return response;
 }
@@ -68,7 +74,7 @@ async function popup() {
 async function enableSwitchToggled(checked) {
     const { sites, globalStyles } = await chrome.storage.local.get(["sites", "globalStyles"]);
     const tab = await getTab();
-    const matchingSite = getMatchingSite(tab.url, sites);
+    const matchingSite = getMatchingSite(sites, tab.url);
     const styles = checked
         ? (matchingSite?.useOwnStyles ? matchingSite.styles : globalStyles)
         : null;
@@ -84,30 +90,26 @@ async function getTab() {
 
 async function siteSwitchToggled(url, checked) {
     const { sites, globalStyles } = await chrome.storage.local.get(["sites", "globalStyles"]);
-    const matchingSite = getMatchingSite(url, sites);
+    const matchingSite = getMatchingSite(sites, url);
 
-    let sitesNew;
+    let sitesNew = sites;
     if (matchingSite) {
         matchingSite.enabled = checked;
-        sitesNew = await updateSite(url, sites, matchingSite);
+        sitesNew = updateSite(sites, url, matchingSite);
     } else {
         if (checked) {
-            sitesNew = await addSite(url, sites);
-        } else {
-            sitesNew = sites;
+            sitesNew = addSite(sites, url);
         }
     }
     const styles = checked
-        ? (matchingSite.useOwnStyles ? matchingSite.styles : globalStyles)
+        ? (matchingSite?.useOwnStyles ? matchingSite?.styles : globalStyles)
         : null;
     styleTabs(url, styles, sitesNew);
 
-    const response = {
-        data: {
-            sites: sitesNew
-        }
+    const response = {}
+    response.data = {
+        sites: sitesNew
     }
-
     return response;
 }
 
@@ -115,11 +117,11 @@ async function siteSwitchToggled(url, checked) {
  * Looks for a URL in the given list of sites and returns the best matching Site if any, otherwise
  * returns undefined.
  *
+ * @param {Array<Site>} sites - The original array of sites.
  * @param {string} url - The URL to be searched for.
- * @param {Array<Site>} sites - A list of sites.
  * @returns {Site|undefined} - The Site with the best matching URL or undefined if none matches.
  */
-function getMatchingSite(url, sites) {
+function getMatchingSite(sites, url) {
     return sites
         .filter(site => matchesURL(url, site.url))
         // Consider the longest matched URL as the best match
@@ -127,53 +129,57 @@ function getMatchingSite(url, sites) {
 }
 
 /**
- * Adds a new Site to storage with a given URL if none matches exactly. Returns a promise requesting
- * the new value of 'sites' from storage in either case.
+ * Adds a new Site to storage with a given URL if none matches exactly. Returns the new value of
+ * 'sites' from storage in either case.
  *
+ * @param {Array<Site>} sites- The original array of sites.
  * @param {string} url - The url of the site to be added.
- * @param {Array<Site>} sites
- * @returns {Promise<Array<Site>>} - A promise with the value of 'sites' from storage.
+ * @returns {Array<Site>} - The new array of 'sites'.
  */
-function addSite(url, sites) {
+function addSite(sites, url) {
     const duplicates = sites.find(site => site.url === url);
-    if (!duplicates) {
-        sites.push(new Site);
-        chrome.storage.local.set({ sites });
+    if (!duplicates && url) {
+        sites.push(new Site(url));
+        chrome.storage.local.set({ sites: sites });
     }
-    return chrome.storage.local.get("sites");;
+    return sites;
 }
 
 /**
- * Looks for a Site in storage with a given url, and if one is found, replaces it with the given
- * value. Returns a promise requesting the new value of 'sites' from storage in either case.
+ * Looks for a Site with an exact url within a given array of 'sites'. If one is found, its value is
+ * replaced with the given 'site' and writes this new array to storage. Returns the new value of
+ * 'sites'.
  *
- * @param {string} url - The exact url of the site that should be changed.
  * @param {Array<Site>} sites - The original array of sites.
+ * @param {string} url - The exact url of the site that should be changed.
  * @param {Site} site - The new value for the matched site in storage.
  *
- * @returns {Promise<Array<Site>>} - A promise with the value of 'sites' from storage.*/
-async function updateSite(url, sites, site) {
+ * @returns {Array<Site>} - The value of 'sites'.
+ */
+function updateSite(sites, url, site) {
     const index = sites.findIndex((s) => s.url === url);
     if (index > -1) {
-        await chrome.storage.local.set({ sites: sites.with(index, site) });
+        sites = sites.with(index, site)
+        chrome.storage.local.set({ sites: sites });
     }
-    return chrome.storage.local.get("sites");
+    return sites;
 }
 
 /**
- * Looks for a Site in storage with a given url, and if one is found, deletes it from storage.
- * Returns a promise requesting the new value of 'sites' from storage in either case.
+ * Looks for a Site with an exact url within a given array of 'sites'. If one is found, it gets
+ * removed from the array and writes this new array to storage. Returns the new value of 'sites'.
  *
+ * @param {Array<Site>} sites - The original array of sites.
  * @param {string} url - The exact url of the site that should be removed.
- * @returns {Promise<Array<Site>>} - A promise with the value of 'sites' from storage.
+ * @returns {Array<Site>} - The value of sites.
  */
-async function removeSite(url) {
-    const { sites } = await chrome.storage.local.get("sites");
+function removeSite(sites, url) {
     const index = sites.findIndex((site) => site.url === url);
     if (index > -1) {
-        await chrome.storage.local.set({ "sites": sites.toSpliced(index, 1) });
+        sites = sites.toSpliced(index, 1)
+        chrome.storage.local.set({ sites: sites });
     }
-    return chrome.storage.local.get("sites");
+    return sites;
 }
 
 /**
@@ -188,8 +194,8 @@ async function styleTabs(url, styles, sites) {
     const tabs = await chrome.tabs.query({});
     tabs.filter(tab => matchesURL(tab.url, url))
         .forEach(tab => {
-            const _styles = matchesDisabledSite(url, sites) ? null : styles;
-            chrome.tabs.sendMessage(tab.id, { styles: _styles });
+            styles = !matchesDisabledSite(sites, url) ? styles : null;
+            chrome.tabs.sendMessage(tab.id, { styles: styles });
         });
 }
 
@@ -213,6 +219,6 @@ function matchesURL(url, pattern) {
  * @param {Array<Site>} sites
  * @returns {boolean}
  */
-function matchesDisabledSite(url, sites) {
+function matchesDisabledSite(sites, url) {
     return sites.some(site => matchesURL(url, site.url) && site.enabled === false)
 }
