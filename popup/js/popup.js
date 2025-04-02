@@ -93,8 +93,13 @@ async function siteSwitchToggled(event) {
     displayStoredSites(sites);
 }
 
-function applyButtonClicked() {
-    // chrome.runtime.sendMessage({ action: "update", data: popupData });
+async function applyButtonClicked() {
+    const styles = getStylesFromPopup();
+    const response = await chrome.runtime.sendMessage({
+        action: "apply_button_clicked",
+        styles: styles,
+    });
+    filloutPopup();
 }
 
 function getStylesFromPopup() {

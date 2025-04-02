@@ -43,6 +43,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "remove_site_clicked") {
         removeSiteClicked(request.url).then(sendResponse);
     }
+    if (request.action === "apply_button_clicked") {
+        applyButtonClicked(request.styles);
+    }
     return true;
 });
 
@@ -60,6 +63,10 @@ async function popup() {
         styles: matchingSite?.useOwnStyles ? matchingSite?.styles : globalStyles
     };
     return response;
+}
+
+async function applyButtonClicked(styles) {
+    chrome.storage.local.set({ globalStyles: styles });
 }
 
 async function removeSiteClicked(url) {
