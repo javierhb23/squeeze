@@ -100,6 +100,7 @@ async function applyButtonClicked() {
     const response = await chrome.runtime.sendMessage({
         action: "apply_button_clicked",
         styles: styles,
+        checked: chkEnable.checked
     });
     filloutPopup();
 }

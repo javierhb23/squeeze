@@ -44,7 +44,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         removeSiteClicked(request.url).then(sendResponse);
     }
     if (request.action === "apply_button_clicked") {
-        applyButtonClicked(request.styles);
+        applyButtonClicked(request.styles, request.checked);
     }
     return true;
 });
@@ -65,7 +65,12 @@ async function popup() {
     return response;
 }
 
-async function applyButtonClicked(styles) {
+async function applyButtonClicked(styles, checked) {
+    const tab = await getTab();
+    // If the 'enable for this page' switch was active, style the current tab with the new styles
+    if (checked) {
+        chrome.tabs.sendMessage(tab.id, {styles: styles});
+    }
     chrome.storage.local.set({ globalStyles: styles });
 }
 
