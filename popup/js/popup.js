@@ -71,7 +71,7 @@ function displayStoredSites(sites) {
             const li = event.target.parentNode;
             const url = li.querySelector(".url-span").innerHTML;
             const response = await chrome.runtime.sendMessage({
-                action: "remove_site_clicked",
+                action: "remove",
                 url: url
             });
             filloutPopup();
@@ -81,14 +81,14 @@ function displayStoredSites(sites) {
 
 function enableSwitchToggled(event) {
     chrome.runtime.sendMessage({
-        action: "enable_switch_toggled",
+        action: "toggle_page",
         checked: event.target.checked
     });
 }
 
 async function siteSwitchToggled(event) {
     const response = await chrome.runtime.sendMessage({
-        action: "site_switch_toggled",
+        action: "toggle_site",
         checked: event.target.checked,
         url: inpUrl.value
     });
@@ -98,7 +98,7 @@ async function siteSwitchToggled(event) {
 async function applyButtonClicked() {
     const styles = getStylesFromPopup();
     const response = await chrome.runtime.sendMessage({
-        action: "apply_button_clicked",
+        action: "update_styles",
         styles: styles,
         checked: chkEnable.checked
     });
