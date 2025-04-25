@@ -7,6 +7,24 @@ class Site {
         this.useOwnStyles = useOwnStyles;
         this.styles = styles
     }
+
+    /**
+     * Since objects saved to storage do not preserve their methods (functions), this function must
+     * be called to attach functionality to them.
+     */
+    static addMatchFunctions(target) {
+        if (!target.url) throw new Error("Target does not have 'url' property");
+
+        target.matchesURL = function (url) {
+            return RegExp(url.replaceAll("*", ".*")).test(this.url);
+        }
+
+        target.matchesDisabledSite = function (sites) {
+            return sites.some(site => this.matchesURL(site.url) && site.enabled === false);
+        }
+
+        return target;
+    }
 }
 
 export default Site;

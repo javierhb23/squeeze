@@ -1,5 +1,4 @@
-import Site from '../../service-worker/classes/Site.js';
-import { addMatchFunctions } from '../../service-worker/utils.js';
+import Site from './Site.js';
 
 class SitesStorage {
     /** @type {Array<Site>} */
@@ -18,7 +17,7 @@ class SitesStorage {
     }
 
     set sites(sites) {
-        this.#sites = sites.map(addMatchFunctions);
+        this.#sites = sites.map(Site.addMatchFunctions);
     }
 
     get sites() {

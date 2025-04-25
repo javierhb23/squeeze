@@ -39,7 +39,7 @@ async function filloutPopup() {
 
     // Fill out style fields
     for (const prop in styles) {
-        const [number, unit] = styles[prop].match(/(\d+)(\D+)/).splice(1);
+        const [number, unit] = styles[prop].match(/(\d+)(\D+)/).slice(1);
         const numberField = document.querySelector(SELECTORS[prop].number);
         const unitField = document.querySelector(SELECTORS[prop].unit);
         numberField.value = number;

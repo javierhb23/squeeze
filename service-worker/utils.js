@@ -1,27 +1,37 @@
-import * as Sites from './sites.js'
+import SitesStorage from "./classes/SitesStorage.js";
 
 /** Equivalent chrome.tabs.query({ active: true, lastFocusedWindow: true }) */
 async function getTab() {
     const lastFocusedWindow = await chrome.windows.getLastFocused();
     const tabs = await chrome.tabs.query({ active: true });
-    return tabs.find(t => t.windowId === lastFocusedWindow.id);
+    const activeTab = tabs.find(t => t.windowId === lastFocusedWindow.id);
+    if (!activeTab) throw new Error("Could not get active tab");
+    if (!activeTab.url) throw new Error("Could not get tab's URL");
+    return activeTab;
 }
 
-/**
- * Queries all browser tabs and filters those which match a given URL pattern and applies the given
- * styles.
- *
- * @param {string} url - The URL pattern to filter tabs with.
- * @param {object} styles
- * @param {Array<Site>} sites
- */
-async function styleTabs(url, styles, sites) {
+/** Queries all tabs and applies styles according to current settings. */
+async function applyStyles() {
+    const storage = await chrome.storage.local.get();
+    const sites = new SitesStorage(storage.sites);
+
     const tabs = await chrome.tabs.query({});
-    tabs.filter(tab => Sites.matchesURL(tab.url, url))
-        .forEach(tab => {
-            styles = !Sites.matchesDisabledSite(sites, url) ? styles : null;
-            chrome.tabs.sendMessage(tab.id, { styles: styles });
-        });
+    for (const tab of tabs) {
+        const matchingSite = sites.search(tab.url)[0];
+        let enabled = matchingSite?.enabled ?? false;
+
+        if (storage.inverse === true) enabled = !enabled;
+
+        const styles = enabled ? chooseStyles(matchingSite) : null;
+
+        chrome.tabs.sendMessage(tab.id, { styles });
+    }
+
+    function chooseStyles(site) {
+        return site?.useOwnStyles
+            ? site.styles
+            : storage.globalStyles;
+    }
 }
 
-export { getTab, styleTabs };
+export { getTab, applyStyles };
