@@ -1,7 +1,23 @@
 import SitesStorage from "./classes/SitesStorage.js";
 import { getTab, applyStyles } from "./utils.js";
 
-export async function popup() {
+function messageHandler(request, sender, sendResponse) {
+    const actions = {
+        "popup": popup,
+        "toggle_site": siteSwitchToggled,
+        "remove": removeSiteClicked,
+        "update_styles": applyButtonClicked,
+    };
+    const requestHandler = actions[request.action];
+    requestHandler(request).then(sendResponse);
+
+    return true;
+}
+
+function webNavigationHandler({ url, tabId }) {
+}
+
+async function popup(request) {
     const tab = await getTab();
     const storage = await chrome.storage.local.get();
     const sites = new SitesStorage(storage.sites);
@@ -11,28 +27,27 @@ export async function popup() {
         ? matchingSite?.styles
         : storage.globalStyles;
 
-    const response = {};
-    response.data = {
+    const response = {
         tabUrl: tab.url,
-        sites: sites.sites,
+        sites: storage.sites,
         matchingSite: matchingSite,
         styles: styles
     };
     return response;
 }
 
-export async function applyButtonClicked(request) {
+async function applyButtonClicked(request) {
     await chrome.storage.local.set({ globalStyles: request.styles });
     applyStyles();
 }
 
-export async function removeSiteClicked(request) {
+async function removeSiteClicked(request) {
     const storage = await chrome.storage.local.get("sites");
     const sites = new SitesStorage(storage.sites);
     sites.remove(request.url);
 }
 
-export async function siteSwitchToggled(request) {
+async function siteSwitchToggled(request) {
     const storage = await chrome.storage.local.get("sites", "globalStyles");
     const sites = new SitesStorage(storage.sites);
     const matchingSite = sites.search(request.url)[0];
@@ -45,8 +60,4 @@ export async function siteSwitchToggled(request) {
     }
 }
 
-export async function navigation({url, tabId}) {
-    console.log("detected navigation");
-    console.log(url);
-    console.log(tabId);
-}
+export { messageHandler, webNavigationHandler };

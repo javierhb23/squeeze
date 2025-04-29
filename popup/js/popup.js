@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup() {
     const response = await chrome.runtime.sendMessage({ action: "popup" });
-    const { tabUrl, styles, sites, matchingSite } = response.data;
+    const { tabUrl, styles, sites, matchingSite } = response;
+
     chkSiteEnabled.checked = matchingSite?.enabled ?? false;
     chkEnable.checked = chkSiteEnabled.checked;
     inpUrl.value = matchingSite?.url ?? tabUrl;

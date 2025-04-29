@@ -1,4 +1,4 @@
-import * as Handlers from './handlers.js';
+import { messageHandler, webNavigationHandler } from "./handlers.js";
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') {
@@ -13,17 +13,6 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     }
 });
 
-chrome.webNavigation.onCompleted.addListener(Handlers.navigation);
+chrome.webNavigation.onCompleted.addListener(webNavigationHandler);
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    const actions = {
-        "popup": Handlers.popup,
-        "toggle_site": Handlers.siteSwitchToggled,
-        "remove": Handlers.removeSiteClicked,
-        "update_styles": Handlers.applyButtonClicked,
-    };
-    const requestHandler = actions[request.action];
-    requestHandler(request).then(sendResponse);
-
-    return true;
-});
+chrome.runtime.onMessage.addListener(messageHandler);
