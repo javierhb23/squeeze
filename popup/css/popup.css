@@ -12,6 +12,15 @@ body {
 header,
 .row,
 .input-group,
-.nav {
+.btn-group {
     margin-bottom: 1em;
+}
+
+.btn-group {
+    width: 100%;
+}
+
+.nav.nav-tabs,
+.hstack {
+    margin-bottom: 0.5em;
 }

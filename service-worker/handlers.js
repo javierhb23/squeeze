@@ -3,7 +3,7 @@ import { getTab, applyStyles } from "./utils.js";
 
 function messageHandler(request, sender, sendResponse) {
     const actions = {
-        "popup": popup,
+        "info": info,
         "toggle_site": siteSwitchToggled,
         "remove": removeSiteClicked,
         "update_styles": applyButtonClicked,
@@ -17,21 +17,16 @@ function messageHandler(request, sender, sendResponse) {
 function webNavigationHandler({ url, tabId }) {
 }
 
-async function popup(request) {
+async function info(request) {
     const tab = await getTab();
     const storage = await chrome.storage.local.get();
     const sites = new SitesStorage(storage.sites);
     const matchingSite = sites.search(tab.url)[0];
 
-    const styles = matchingSite?.useOwnStyles
-        ? matchingSite?.styles
-        : storage.globalStyles;
-
     const response = {
         tabUrl: tab.url,
-        sites: storage.sites,
-        matchingSite: matchingSite,
-        styles: styles
+        matchingSite: matchingSite ?? null,
+        storage: storage
     };
     return response;
 }
@@ -48,7 +43,7 @@ async function removeSiteClicked(request) {
 }
 
 async function siteSwitchToggled(request) {
-    const storage = await chrome.storage.local.get("sites", "globalStyles");
+    const storage = await chrome.storage.local.get(["sites", "globalStyles"]);
     const sites = new SitesStorage(storage.sites);
     const matchingSite = sites.search(request.url)[0];
 
