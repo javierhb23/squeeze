@@ -11,54 +11,58 @@
 </head>
 
 <body>
-    <header>
-        <div class="form-check form-switch me-auto">
-            <input class="form-check-input" type="checkbox" role="switch" id="toggle-site">
-            <label class="form-check-label" for="toggle-site">Always enable on this URL</label>
+    <div class="card h-100">
+        <div class="card-header">
+            <ul class="nav nav-tabs nav-fill card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites-tab-pane"
+                        type="button" role="tab">Sites
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings-tab-pane"
+                        type="button" role="tab">Settings
+                    </button>
+                </li>
+            </ul>
         </div>
-    </header>
-    <main>
-        <div class="input-group">
-            <input class="form-control" id="url" placeholder="URL">
-            <span class="input-group-text"><i class="bi-bookmark" id="bookmark-icon"></i></span>
-        </div>
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites-tab-pane"
-                    type="button" role="tab">Sites
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings-tab-pane"
-                    type="button" role="tab">Settings
-                </button>
-            </li>
-        </ul>
-        <div class="tab-content">
-            <section class="tab-pane fade show active" id="sites-tab-pane" role="tabpanel" tabindex="0">
-                <template id="site-list-item-template">
-                    <li class="list-group-item list-group-item-action d-flex">
-                        <span class="me-auto url-span"></span>
-                        <button type="button" class="btn-close remove-site-btn" aria-label="Close"></button>
-                    </li>
-                </template>
+        <div class="card-body tab-content">
+            <section class="tab-pane fade show active h-100" id="sites-tab-pane" role="tabpanel" tabindex="0">
+                <div class="vstack gap-3 h-100">
+                    <div class="input-group">
+                        <input class="form-control" id="url" placeholder="URL">
+                        <button class="btn btn-outline-secondary" type="button" id="save-btn">
+                            <span id="save-btn-text">Save</span>
+                            <i class="bi bi-bookmark" id="save-btn-icon"></i>
+                        </button>
 
-                <div class="hstack gap-2">
-                    <label class="me-auto">Apply limits to</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="inverse" value="false" id="inverse-false">
-                        <label class="form-check-label" for="inverse-false">Only these sites</label>
                     </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="inverse" value="true" id="inverse-true">
-                        <label class="form-check-label" for="inverse-true">All except these sites</label>
+
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <div class="hstack gap-2">
+                                <span class="me-auto">Apply to</span>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="inverse" value="false"
+                                        id="inverse-false">
+                                    <label class="form-check-label" for="inverse-false">Only these sites</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="inverse" value="true"
+                                        id="inverse-true">
+                                    <label class="form-check-label" for="inverse-true">All except thesesites</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group" id="sites-list-group"></ul>
+                        </div>
                     </div>
                 </div>
-
-                <ul class="list-group" id="sites-list-group"></ul>
             </section>
+
             <section class="tab-pane fade" id="settings-tab-pane" role="tabpanel" tabindex="1">
-                <form id="style-controls">
+                <div class="vstack gap-3">
                     <div class="row">
                         <div class="col">
                             <label for="max-width" class="form-label">Max Width</label>
@@ -87,11 +91,19 @@
                             </select>
                         </div>
                     </div>
-                    <button class="btn btn-success" id="apply-btn" type="button" disabled>Apply</button>
-                </form>
+                    <div class="hstack">
+                        <button class="btn btn-success" id="apply-btn" type="button" disabled>Apply</button>
+                    </div>
+                </div>
             </section>
         </div>
-    </main>
+    </div>
 </body>
+<template id="site-list-item-template">
+    <li class="list-group-item list-group-item-action d-flex">
+        <span class="me-auto" name="site-url"></span>
+        <button type="button" class="btn-close" aria-label="Remove"></button>
+    </li>
+</template>
 
 </html>

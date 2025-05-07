@@ -1,7 +1,9 @@
 const chkSiteEnabled = document.querySelector("#toggle-site");
 const inpUrl = document.querySelector("#url");
 const btnApply = document.querySelector("#apply-btn");
-const iconBookmark = document.querySelector("#bookmark-icon");
+const btnSave = document.querySelector("#save-btn");
+const spanSaveStatus = document.querySelector("#save-btn-text");
+const iconSaveStatus = document.querySelector("#save-btn-icon");
 const ulSites = document.querySelector("#sites-list-group");
 const templateSite = document.querySelector("#site-list-item-template");
 
@@ -20,23 +22,28 @@ const SELECTORS = {
 
 document.addEventListener("DOMContentLoaded", async () => {
     filloutPopup();
-    // chkEnable.addEventListener("change", enableSwitchToggled);
-    chkSiteEnabled.addEventListener("change", siteSwitchToggled);
+    btnSave.addEventListener("click", saveButtonClicked);
     btnApply.addEventListener("click", applyButtonClicked);
     // Undisable apply button on input events on style fields
     document.querySelectorAll(".control").forEach(input =>
         input.addEventListener("input", () => btnApply.disabled = false));
 });
 
+async function saveButtonClicked() {
+    const response = await chrome.runtime.sendMessage({ action: "add_site", url: inpUrl.value });
+    console.log(response);
+    filloutPopup();
+}
+
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup() {
     const response = await chrome.runtime.sendMessage({ action: "info" });
-    console.log(response);
     const { tabUrl, matchingSite, storage } = response;
 
-    chkSiteEnabled.checked = !!matchingSite?.enabled;
+    // chkSiteEnabled.checked = !!matchingSite?.enabled;
     inpUrl.value = matchingSite?.url ?? tabUrl;
-    iconBookmark.className = !!matchingSite ? 'bi-bookmark-check-fill' : 'bi-bookmark';
+    iconSaveStatus.className = !!matchingSite ? 'bi-bookmark-check-fill' : 'bi-bookmark';
+    spanSaveStatus.innerText = !!matchingSite ? "Saved" : "Save";
 
     const styles = storage.globalStyles;
 
@@ -63,22 +70,23 @@ async function filloutPopup() {
  * @param {Array<Site>} sites
  */
 function displayStoredSites(sites) {
-    // Remove existing 'li' elements
-    ulSites.querySelectorAll("li").forEach(li => li.remove());
+    // Remove existing list elements
+    Array.from(ulSites.children).forEach(el => el.remove());
 
     if (!sites[0]) {
-        const empty = { url: "No sites found" };
-        appendSite(empty, true);
+        const spanEmpty = document.createElement("span");
+        spanEmpty.innerText = "Saved sites will appear here"
+        ulSites.append(spanEmpty);
         return;
     }
 
     sites.forEach(appendSite);
 
     // Define Remove site ('x') button behavior on each list element
-    document.querySelectorAll(".remove-site-btn").forEach((btn) => {
+    document.querySelectorAll("button.btn-close").forEach((btn) => {
         btn.addEventListener("click", async (event) => {
             const li = event.target.parentNode;
-            const url = li.querySelector(".url-span").innerHTML;
+            const url = li.querySelector("[name=site-url]").innerHTML;
             await chrome.runtime.sendMessage({
                 action: "remove",
                 url: url
@@ -87,9 +95,8 @@ function displayStoredSites(sites) {
         });
     });
 
-    function appendSite(site, noCloseButton = false) {
+    function appendSite(site) {
         const li = templateSite.content.cloneNode(true);
-        if (noCloseButton) { li.querySelector(".btn-close").remove(); }
         const span = li.querySelector("span");
         span.innerHTML = site.url;
         ulSites.appendChild(li);

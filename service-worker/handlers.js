@@ -4,9 +4,10 @@ import { getTab, applyStyles } from "./utils.js";
 function messageHandler(request, sender, sendResponse) {
     const actions = {
         "info": info,
-        "toggle_site": siteSwitchToggled,
-        "remove": removeSiteClicked,
-        "update_styles": applyButtonClicked,
+        "add_site": addSite,
+        // "toggle_site": siteSwitchToggled,
+        "remove": removeSite,
+        "update_styles": updateStyles,
     };
     const requestHandler = actions[request.action];
     requestHandler(request).then(sendResponse);
@@ -24,6 +25,7 @@ async function info(request) {
     const matchingSite = sites.search(tab.url)[0];
 
     const response = {
+        request,
         tabUrl: tab.url,
         matchingSite: matchingSite ?? null,
         storage: storage
@@ -31,15 +33,44 @@ async function info(request) {
     return response;
 }
 
-async function applyButtonClicked(request) {
-    await chrome.storage.local.set({ globalStyles: request.styles });
-    applyStyles();
+async function updateStyles(request) {
+    const response = { request };
+    try {
+        await chrome.storage.local.set({ globalStyles: request.styles });
+        applyStyles();
+    } catch (error) {
+        response.status = error.name;
+        response.error = error.message;
+    }
+    return response;
 }
 
-async function removeSiteClicked(request) {
+async function addSite(request) {
+    const storage = await chrome.storage.local.get();
+    const sites = new SitesStorage(storage.sites);
+
+    const response = { request };
+    try {
+        sites.add(request.url);
+        response.status = `${request.url} was added to storage successfully`
+    } catch (error) {
+        response.status = error.name;
+        response.error = error.message;
+    }
+    return response;
+}
+
+async function removeSite(request) {
+    const response = { request };
     const storage = await chrome.storage.local.get("sites");
     const sites = new SitesStorage(storage.sites);
-    sites.remove(request.url);
+    try {
+        sites.remove(request.url);
+    } catch (error) {
+        response.status = error.name;
+        response.error = error.message;
+    }
+    return response;
 }
 
 async function siteSwitchToggled(request) {
@@ -53,6 +84,7 @@ async function siteSwitchToggled(request) {
         matchingSite.enabled = request.checked;
         sites.update(request.url, matchingSite);
     }
+    return response;
 }
 
 export { messageHandler, webNavigationHandler };

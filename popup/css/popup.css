@@ -3,24 +3,7 @@
 }
 
 body {
-    padding: 20px;
     width: 500px;
     height: 600px;
     overflow-x: hidden;
-}
-
-header,
-.row,
-.input-group,
-.btn-group {
-    margin-bottom: 1em;
-}
-
-.btn-group {
-    width: 100%;
-}
-
-.nav.nav-tabs,
-.hstack {
-    margin-bottom: 0.5em;
 }
