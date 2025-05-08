@@ -1,5 +1,10 @@
-chrome.runtime.onMessage.addListener((message) => {
-    if (Object.hasOwn(message, "styles")) {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message === "ping") {
+        sendResponse("pong");
+        return true;
+    }
+
+    if (message.styles) {
         // Remove existing inline styles
         for (const prop in document.body.style) {
             document.body.style[prop] = null;

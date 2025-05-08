@@ -24,7 +24,17 @@ async function applyStyles() {
 
         const styles = enabled ? chooseStyles(matchingSite) : null;
 
-        chrome.tabs.sendMessage(tab.id, { styles });
+        try {
+            const tabResponse = await chrome.tabs.sendMessage(tab.id, "ping");
+            if (tabResponse === "pong") {
+                chrome.tabs.sendMessage(tab.id, { styles });
+            }
+        } catch (error) {
+            // An error that says "Could not establish connection. Receiving end does not exist"
+            // likely means the content script for that tab has not been registered.
+            console.error(error);
+        }
+
     }
 
     function chooseStyles(site) {

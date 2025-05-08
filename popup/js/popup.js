@@ -1,4 +1,3 @@
-const chkSiteEnabled = document.querySelector("#toggle-site");
 const inpUrl = document.querySelector("#url");
 const btnApply = document.querySelector("#apply-btn");
 const btnSave = document.querySelector("#save-btn");
@@ -116,8 +115,7 @@ async function applyButtonClicked() {
     const styles = getStylesFromPopup();
     await chrome.runtime.sendMessage({
         action: "update_styles",
-        styles: styles,
-        checked: chkEnable.checked
+        styles: styles
     });
     filloutPopup();
 }
