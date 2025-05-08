@@ -49,8 +49,16 @@ async function addSite(request) {
     const storage = await chrome.storage.local.get();
     const sites = new SitesStorage(storage.sites);
 
+    const forbiddenSchemes = [
+        "brave://",
+        "chrome://"
+    ];
+
     const response = { request };
     try {
+        if (forbiddenSchemes.some(s => request.url.startsWith(s))) {
+            throw new Error(`${request.url} is not a valid URL`);
+        }
         sites.add(request.url);
         response.status = `${request.url} was added to storage successfully`
     } catch (error) {
