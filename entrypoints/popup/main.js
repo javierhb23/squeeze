@@ -1,10 +1,15 @@
-const inpUrl = document.querySelector("#url");
-const btnApply = document.querySelector("#apply-btn");
-const btnSave = document.querySelector("#save-btn");
-const spanSaveStatus = document.querySelector("#save-btn-text");
-const iconSaveStatus = document.querySelector("#save-btn-icon");
-const ulSites = document.querySelector("#sites-list-group");
-const templateSite = document.querySelector("#site-list-item-template");
+import './styles.scss';
+import 'bootstrap';
+// import $ from "jquery";
+const $ = (s) => document.querySelector(s);
+
+const inpUrl = $("#url");
+const btnApply = $("#apply-btn");
+const btnSave = $("#save-btn");
+const spanSaveStatus = $("#save-btn-text");
+const iconSaveStatus = $("#save-btn-icon");
+const ulSites = $("#sites-list-group");
+const templateSite = $("#site-list-item-template");
 
 /* Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
 numeric and unit portion in the popup window's style control fields. */
