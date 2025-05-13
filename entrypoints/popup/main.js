@@ -9,6 +9,15 @@ const iconSaveStatus = document.querySelector("#save-btn-icon");
 const ulSites = document.querySelector("#sites-list-group");
 const templateSite = document.querySelector("#site-list-item-template");
 
+btnSave.addEventListener("click", saveButtonClicked);
+btnApply.addEventListener("click", applyButtonClicked);
+document.querySelectorAll(".control").forEach(input => {
+    // Undisable apply button on input events on style fields
+    input.addEventListener("input", () => btnApply.disabled = false);
+});
+
+filloutPopup();
+
 /* Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
 numeric and unit portion in the popup window's style control fields. */
 const SELECTORS = {
@@ -21,21 +30,6 @@ const SELECTORS = {
         unit: "#margin-left-unit"
     }
 };
-
-document.addEventListener("DOMContentLoaded", async () => {
-    filloutPopup();
-    btnSave.addEventListener("click", saveButtonClicked);
-    btnApply.addEventListener("click", applyButtonClicked);
-    // Undisable apply button on input events on style fields
-    document.querySelectorAll(".control").forEach(input =>
-        input.addEventListener("input", () => btnApply.disabled = false));
-});
-
-async function saveButtonClicked() {
-    const response = await chrome.runtime.sendMessage({ action: "add_site", url: inpUrl.value });
-    console.log(response);
-    filloutPopup();
-}
 
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup() {
@@ -60,9 +54,10 @@ async function filloutPopup() {
 
     // Determine which radio input should be checked for "Apply limits to"
     const searchValue = storage.inverse ? "true" : "false";
-    const searchFunction = input => input.value === searchValue;
-    const inverseRadioInputs = [...document.querySelectorAll("[name=inverse]")];
-    inverseRadioInputs.find(searchFunction).checked = true;
+    const searchFunction = (input) => input.value === searchValue;
+    const inverseRadioInputs = document.querySelectorAll("[name=inverse]");
+    const activeRadio = Array.from(inverseRadioInputs).find(searchFunction);
+    activeRadio.checked = true; // Toggle the proper radio input
 
     displayStoredSites(storage.sites);
 }
@@ -105,12 +100,9 @@ function displayStoredSites(sites) {
     }
 }
 
-async function siteSwitchToggled(event) {
-    await chrome.runtime.sendMessage({
-        action: "toggle_site",
-        checked: event.target.checked,
-        url: inpUrl.value
-    });
+async function saveButtonClicked() {
+    const response = await chrome.runtime.sendMessage({ action: "add_site", url: inpUrl.value });
+    console.log(response);
     filloutPopup();
 }
 
