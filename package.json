@@ -4,8 +4,7 @@
   "description": "Make old-school websites readable on wide displays by limiting their width",
   "dependencies": {
     "bootstrap": "^5.3.6",
-    "bootstrap-icons": "^1.12.1",
-    "jquery": "^3.7.1"
+    "bootstrap-icons": "^1.12.1"
   },
   "optionalDependencies": {
     "jsdoc": "^4.0.4"
