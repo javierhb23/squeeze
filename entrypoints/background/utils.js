@@ -23,8 +23,16 @@ async function applyStyles(url, tabId) {
     let enabled = !!site?.enabled;
     if (storage.inverse) { enabled = !enabled }
 
-    const chooseStyles = (site) => site?.useOwnStyles ? site.styles : storage.globalStyles;
-    const styles = enabled ? chooseStyles(site) : null;
+    const supportedStyles = [
+        "maxWidth",
+        "marginLeft",
+    ];
+
+    const styles = {};
+    const chosenStyles = site?.useOwnStyles ? site.styles : storage.globalStyles;
+    for (const prop of supportedStyles) {
+        styles[prop] = enabled ? chosenStyles[prop] : null;
+    }
 
     chrome.tabs.sendMessage(tabId, { styles }).catch(error => {
         const contentScriptError = "Error: Could not establish connection. Receiving end does not exist."
