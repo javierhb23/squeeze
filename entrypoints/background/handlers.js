@@ -6,7 +6,6 @@ function messageHandler(request, sender, sendResponse) {
     const actions = {
         "info": info,
         "add_site": addSite,
-        // "toggle_site": siteSwitchToggled,
         "remove": removeSite,
         "update_styles": updateStyles,
     };
@@ -74,20 +73,6 @@ async function removeSite(request) {
     } catch (error) {
         response.status = error.name;
         response.error = error.message;
-    }
-    return response;
-}
-
-async function siteSwitchToggled(request) {
-    const storage = await chrome.storage.local.get(["sites", "globalStyles"]);
-    const sites = new SitesStorage(storage.sites);
-    const matchingSite = sites.search(request.url)[0];
-
-    if (request.checked && !matchingSite) {
-        sites.add(request.url);
-    } else if (matchingSite) {
-        matchingSite.enabled = request.checked;
-        sites.update(request.url, matchingSite);
     }
     return response;
 }
