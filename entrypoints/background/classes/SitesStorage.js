@@ -58,7 +58,7 @@ class SitesStorage {
 
     checkDuplicates(newSite) {
         const isDuplicate = this.sites.some(site => site.url === newSite.url);
-        if (isDuplicate) throw new Error(`${url} already exists`);
+        if (isDuplicate) throw new Error(`${newSite.url} already exists`);
     }
 
     /**
