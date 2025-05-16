@@ -53,7 +53,7 @@ async function addSite(request) {
 
     const response = { request };
     try {
-        sites.add(request.url);
+        await sites.add(request.url);
         styleTabs();
         response.status = `${request.url} was added to storage successfully`
     } catch (error) {
@@ -68,8 +68,9 @@ async function removeSite(request) {
     const storage = await chrome.storage.local.get("sites");
     const sites = new SitesStorage(storage.sites);
     try {
-        sites.remove(request.url);
+        await sites.remove(request.url);
         styleTabs();
+        response.status = `${request.url} was removed successfully`
     } catch (error) {
         response.status = error.name;
         response.error = error.message;

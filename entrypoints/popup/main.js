@@ -81,15 +81,7 @@ function displayStoredSites(sites) {
 
     // Define Remove site ('x') button behavior on each list element
     document.querySelectorAll("button.btn-close").forEach((btn) => {
-        btn.addEventListener("click", async (event) => {
-            const li = event.target.parentNode;
-            const url = li.querySelector("[name=site-url]").innerHTML;
-            await chrome.runtime.sendMessage({
-                action: "remove",
-                url: url
-            });
-            filloutPopup();
-        });
+        btn.addEventListener("click", removeSiteClicked);
     });
 
     function appendSite(site) {
@@ -100,8 +92,22 @@ function displayStoredSites(sites) {
     }
 }
 
+async function removeSiteClicked(event) {
+    const li = event.target.parentNode;
+    const url = li.querySelector("[name=site-url]").innerHTML;
+    const response = await chrome.runtime.sendMessage({
+        action: "remove",
+        url: url
+    });
+    console.log(response);
+    filloutPopup();
+};
+
 async function saveButtonClicked() {
-    const response = await chrome.runtime.sendMessage({ action: "add_site", url: inpUrl.value });
+    const response = await chrome.runtime.sendMessage({
+        action: "add_site",
+        url: inpUrl.value
+    });
     console.log(response);
     filloutPopup();
 }
