@@ -80,6 +80,7 @@ class SitesStorage {
      * @returns {Promise<SitesStorage>}
      */
     add(url) {
+        url = Site.parseURL(url);
         const site = new Site(url);
         const sites = this.sites;
         const duplicates = sites.some(site => site.url === url);
@@ -96,6 +97,7 @@ class SitesStorage {
      * @returns {Promise<SitesStorage>}
      */
     update(url, newSite) {
+        url = Site.parseURL(url);
         const sites = this.sites;
         const index = sites.findIndex(site => site.url === url);
 
