@@ -1,5 +1,6 @@
+import Site from "./classes/Site.js";
 import SitesStorage from "./classes/SitesStorage.js";
-import { getTab, applyStyles } from "./utils.js";
+import { getTab, applyStyles, styleTabs } from "./utils.js";
 
 function messageHandler(request, sender, sendResponse) {
     const actions = {
@@ -15,7 +16,9 @@ function messageHandler(request, sender, sendResponse) {
     return true;
 }
 
-function webNavigationHandler({ url, tabId }) {
+async function webNavigationHandler({ url, tabId }) {
+    url = Site.parseURL(url);
+    applyStyles(url, tabId);
 }
 
 async function info(request) {
@@ -37,7 +40,7 @@ async function updateStyles(request) {
     const response = { request };
     try {
         await chrome.storage.local.set({ globalStyles: request.styles });
-        applyStyles();
+        styleTabs();
     } catch (error) {
         response.status = error.name;
         response.error = error.message;
@@ -52,6 +55,7 @@ async function addSite(request) {
     const response = { request };
     try {
         sites.add(request.url);
+        styleTabs();
         response.status = `${request.url} was added to storage successfully`
     } catch (error) {
         response.status = error.name;
@@ -66,6 +70,7 @@ async function removeSite(request) {
     const sites = new SitesStorage(storage.sites);
     try {
         sites.remove(request.url);
+        styleTabs();
     } catch (error) {
         response.status = error.name;
         response.error = error.message;

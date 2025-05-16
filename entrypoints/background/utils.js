@@ -11,37 +11,29 @@ async function getTab() {
 }
 
 /** Queries all tabs and applies styles according to current settings. */
-async function applyStyles() {
-    const storage = await chrome.storage.local.get();
-    const sites = new SitesStorage(storage.sites);
-
+async function styleTabs() {
     const tabs = await chrome.tabs.query({});
-    for (const tab of tabs) {
-        const matchingSite = sites.search(tab.url)[0];
-        let enabled = matchingSite?.enabled ?? false;
-
-        if (storage.inverse === true) enabled = !enabled;
-
-        const styles = enabled ? chooseStyles(matchingSite) : null;
-
-        try {
-            const tabResponse = await chrome.tabs.sendMessage(tab.id, "ping");
-            if (tabResponse === "pong") {
-                chrome.tabs.sendMessage(tab.id, { styles });
-            }
-        } catch (error) {
-            // An error that says "Could not establish connection. Receiving end does not exist"
-            // likely means the content script for that tab has not been registered.
-            console.error(error);
-        }
-
-    }
-
-    function chooseStyles(site) {
-        return site?.useOwnStyles
-            ? site.styles
-            : storage.globalStyles;
-    }
+    tabs.forEach(tab => applyStyles(tab.url, tab.id));
 }
 
-export { getTab, applyStyles };
+async function applyStyles(url, tabId) {
+    const storage = await chrome.storage.local.get();
+    const sites = new SitesStorage(storage.sites);
+    const site = sites.search(url)[0];
+    let enabled = !!site?.enabled;
+    if (storage.inverse) { enabled = !enabled }
+
+    const chooseStyles = (site) => site?.useOwnStyles ? site.styles : storage.globalStyles;
+    const styles = enabled ? chooseStyles(site) : null;
+
+    chrome.tabs.sendMessage(tabId, { styles }).catch(error => {
+        const contentScriptError = "Error: Could not establish connection. Receiving end does not exist."
+        if (error.toString() === contentScriptError) {
+            console.log(`Cannot modify tab with url ${url} (tab id ${tabId}).`);
+        } else {
+            console.error(error)
+        }
+    });
+}
+
+export { getTab, styleTabs, applyStyles };
