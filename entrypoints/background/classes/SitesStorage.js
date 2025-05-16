@@ -75,6 +75,11 @@ class SitesStorage {
         return this.sites.find(site => site.url === url);
     }
 
+    checkDuplicates(newSite) {
+        const isDuplicate = this.sites.some(site => site.url === newSite.url);
+        if (isDuplicate) throw new Error(`${url} already exists`);
+    }
+
     /**
      * @param {string} url
      * @returns {Promise<SitesStorage>}
@@ -82,11 +87,8 @@ class SitesStorage {
     add(url) {
         url = Site.parseURL(url);
         const site = new Site(url);
+        this.checkDuplicates(site);
         const sites = this.sites;
-        const duplicates = sites.some(site => site.url === url);
-
-        if (duplicates) throw new Error(`${url} already exists`);
-
         sites.push(site);
         return this.store(sites);
     }
@@ -103,6 +105,7 @@ class SitesStorage {
 
         if (index < 0) throw new Error(`${url} not found`);
 
+        this.checkDuplicates(newSite);
         sites.splice(index, 1, newSite);
         return this.store(sites);
     }
