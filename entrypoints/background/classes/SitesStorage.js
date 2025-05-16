@@ -23,7 +23,7 @@ class SitesStorage {
      * Sets this instance's "sites" property and the extension storage key "sites" to the given
      * value. Returns a promise to the calling instance.
      *
-     * @param {Array<Site>} sites 
+     * @param {Array<Site>} sites
      * @returns {Promise<SitesStorage>}
      */
     async store(sites) {
@@ -33,8 +33,7 @@ class SitesStorage {
     }
 
     /**
-     * Returns a list of sites that match a given URL pattern sorted by longest to shortest site
-     * URL.
+     * Returns a list of sites that match a given URL pattern sorted by length (descending).
      *
      * @param {string} url 
      * @returns {Array<Site>}
@@ -93,7 +92,7 @@ class SitesStorage {
     }
 
     /**
-     * @param {string} url 
+     * @param {string} url
      * @returns {Promise<SitesStorage>}
      */
     remove(url) {
