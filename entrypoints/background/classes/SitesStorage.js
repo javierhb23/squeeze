@@ -5,15 +5,10 @@ class SitesStorage {
     #sites = [];
 
     /**
-     * This class may be initialized with an already available array of sites. Otherwise the
-     * retrieve() function may be used.
-     *
      * @param {Array<Site>} [sites]
      */
     constructor(sites) {
-        if (sites) {
-            this.sites = sites;
-        }
+        this.sites = sites;
     }
 
     set sites(sites) {
@@ -22,19 +17,6 @@ class SitesStorage {
 
     get sites() {
         return this.#sites;
-    }
-
-    /**
-     * Retrieves the latest value of "sites" from storage and makes it available through the "sites"
-     * property on the caller object once the promise is fulfilled. Returns a promise to the calling
-     * instance.
-     *
-     * @returns {Promise<SitesStorage>}
-     */
-    async retrieve() {
-        const { sites } = await chrome.storage.local.get("sites");
-        this.sites = sites;
-        return this;
     }
 
     /**
