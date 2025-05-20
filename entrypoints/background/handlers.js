@@ -1,4 +1,3 @@
-import Site from "./classes/Site.js";
 import SitesStorage from "./classes/SitesStorage.js";
 import { getTab, applyStyles, styleTabs } from "./utils.js";
 
@@ -15,8 +14,7 @@ function messageHandler(request, sender, sendResponse) {
     return true;
 }
 
-async function webNavigationHandler({ url, tabId }) {
-    url = Site.parseURL(url);
+function webNavigationHandler({ url, tabId }) {
     applyStyles(url, tabId);
 }
 

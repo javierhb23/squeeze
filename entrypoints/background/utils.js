@@ -1,3 +1,4 @@
+import Site from "./classes/Site.js"
 import SitesStorage from "./classes/SitesStorage.js";
 
 /** Equivalent chrome.tabs.query({ active: true, lastFocusedWindow: true }) */
@@ -17,31 +18,38 @@ async function styleTabs() {
 }
 
 async function applyStyles(url, tabId) {
-    const storage = await chrome.storage.local.get();
-    const sites = new SitesStorage(storage.sites);
-    const site = sites.search(url)[0];
-    let enabled = !!site?.enabled;
-    if (storage.inverse) { enabled = !enabled }
+    try {
+        url = Site.parseURL(url);
 
-    const supportedStyles = [
-        "maxWidth",
-        "marginLeft",
-    ];
+        const storage = await chrome.storage.local.get();
+        const sites = new SitesStorage(storage.sites);
+        const site = sites.search(url)[0];
+        let enabled = !!site?.enabled;
+        if (storage.inverse) { enabled = !enabled }
 
-    const styles = {};
-    const chosenStyles = site?.useOwnStyles ? site.styles : storage.globalStyles;
-    for (const prop of supportedStyles) {
-        styles[prop] = enabled ? chosenStyles[prop] : null;
-    }
+        const supportedStyles = [
+            "maxWidth",
+            "marginLeft",
+        ];
 
-    chrome.tabs.sendMessage(tabId, { styles }).catch(error => {
-        const contentScriptError = "Error: Could not establish connection. Receiving end does not exist."
-        if (error.toString() === contentScriptError) {
-            console.log(`Cannot modify tab with url ${url} (tab id ${tabId}).`);
-        } else {
-            console.error(error)
+        const styles = {};
+        const chosenStyles = site?.useOwnStyles ? site.styles : storage.globalStyles;
+        for (const prop of supportedStyles) {
+            styles[prop] = enabled ? chosenStyles[prop] : null;
         }
-    });
+
+        chrome.tabs.sendMessage(tabId, { styles }).catch(error => {
+            const contentScriptError = "Error: Could not establish connection. Receiving end does not exist."
+            if (error.toString() === contentScriptError) {
+                console.log(`Cannot modify tab with url ${url} (tab id ${tabId}).`);
+            } else {
+                console.error(error)
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        console.log("Skipping", url);
+    }
 }
 
 export { getTab, styleTabs, applyStyles };
