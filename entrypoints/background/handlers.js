@@ -30,8 +30,10 @@ function errorHandler(fn) {
             return {
                 request: request,
                 status: "error",
-                errorName: error.name,
-                errorMessage: error.message
+                error: {
+                    name: error.name,
+                    message: error.message
+                }
             }
         });
     }

@@ -6,7 +6,7 @@
     <title>Squeeze</title>
 
     <!-- Customize the manifest options -->
-    <meta name="manifest.default_icon" content="icon-32.png"/>
+    <meta name="manifest.default_icon" content="icon-32.png" />
 
     <link href="styles.css" rel="stylesheet">
     <script src="main.js" type="module"></script>
@@ -105,13 +105,13 @@
 <template id="site-list-item-template">
     <li class="list-group-item list-group-item-action d-flex">
         <span class="me-auto" name="site-url"></span>
-        <button type="button" class="btn-close" aria-label="Remove"></button>
+        <button type="button" class="btn-close" name="btn-remove-site" aria-label="Remove"></button>
     </li>
 </template>
 <template id="error-template">
-    <div class="alert alert-danger" role="alert">
-        <b><span id="error-name">Error name</span>:</b>
-        <span id="error-message">Error message</span>
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        <b><span id="error-name"></span>:</b>
+        <span id="error-message"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 </template>

@@ -8,6 +8,8 @@ const spanSaveStatus = document.querySelector("#save-btn-text");
 const iconSaveStatus = document.querySelector("#save-btn-icon");
 const ulSites = document.querySelector("#sites-list-group");
 const templateSite = document.querySelector("#site-list-item-template");
+const templateError = document.querySelector("#error-template");
+const errorContainer = document.querySelector("#error-container");
 
 btnSave.addEventListener("click", saveButtonClicked);
 btnApply.addEventListener("click", applyButtonClicked);
@@ -32,9 +34,9 @@ const SELECTORS = {
 };
 
 /** Retrieves relevant data from storage into popup window. */
-async function filloutPopup() {
-    const response = await chrome.runtime.sendMessage({ action: "info" });
-    const { tabUrl, matchingSite, storage } = response;
+async function filloutPopup(error) {
+    const data = await chrome.runtime.sendMessage({ action: "info" });
+    const { tabUrl, matchingSite, storage } = data;
 
     // chkSiteEnabled.checked = !!matchingSite?.enabled;
     inpUrl.value = matchingSite?.url ?? tabUrl;
@@ -60,6 +62,17 @@ async function filloutPopup() {
     activeRadio.checked = true; // Toggle the proper radio input
 
     displayStoredSites(storage.sites);
+
+    if (!!error) {
+        displayError(error);
+    }
+}
+
+function displayError(error) {
+    const errorNode = templateError.content.cloneNode(true);
+    errorNode.querySelector("#error-name").innerText = error.name;
+    errorNode.querySelector("#error-message").innerText = error.message;
+    errorContainer.appendChild(errorNode);
 }
 
 /**
@@ -80,7 +93,7 @@ function displayStoredSites(sites) {
     sites.forEach(appendSite);
 
     // Define Remove site ('x') button behavior on each list element
-    document.querySelectorAll("button.btn-close").forEach((btn) => {
+    document.querySelectorAll("[name=btn-remove-site]").forEach((btn) => {
         btn.addEventListener("click", removeSiteClicked);
     });
 
@@ -99,8 +112,7 @@ async function removeSiteClicked(event) {
         action: "remove",
         url: url
     });
-    console.log(response);
-    filloutPopup();
+    filloutPopup(response.error);
 };
 
 async function saveButtonClicked() {
@@ -108,17 +120,16 @@ async function saveButtonClicked() {
         action: "add_site",
         url: inpUrl.value
     });
-    console.log(response);
-    filloutPopup();
+    filloutPopup(response.error);
 }
 
 async function applyButtonClicked() {
     const styles = getStylesFromPopup();
-    await chrome.runtime.sendMessage({
+    const response = await chrome.runtime.sendMessage({
         action: "update_styles",
         styles: styles
     });
-    filloutPopup();
+    filloutPopup(response.error);
 }
 
 function getStylesFromPopup() {
