@@ -46,8 +46,8 @@ class Site {
 
         // Check for invalid scheme
         const invalidSchemes = ["brave://", "chrome://"];
-        const hasInvalidScheme = (url) => invalidSchemes.some(scheme => url.startsWith(scheme));
-        if (hasInvalidScheme(url)) throw new Error(`${url} is not a valid URL`);
+        const hasInvalidScheme = invalidSchemes.some(scheme => url.startsWith(scheme));
+        if (hasInvalidScheme) throw new Error(`${url} is not a valid URL`);
 
         return url;
     }
