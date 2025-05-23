@@ -124,20 +124,17 @@ async function saveButtonClicked() {
 }
 
 async function applyButtonClicked() {
-    const styles = getStylesFromPopup();
+    const styles = {};
+
+    for (const prop in SELECTORS) {
+        const numberField = document.querySelector(SELECTORS[prop].number);
+        const unitField = document.querySelector(SELECTORS[prop].unit);
+        styles[prop] = numberField.value + unitField.value;
+    }
+
     const response = await chrome.runtime.sendMessage({
         action: "update_styles",
         styles: styles
     });
     filloutPopup(response.error);
-}
-
-function getStylesFromPopup() {
-    const styles = {};
-    for (const prop in SELECTORS) {
-        const numberField = document.querySelector(SELECTORS[prop]["number"]);
-        const unitField = document.querySelector(SELECTORS[prop]["unit"]);
-        styles[prop] = numberField.value + unitField.value;
-    }
-    return styles;
 }
