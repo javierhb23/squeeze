@@ -36,8 +36,8 @@ const SELECTORS = {
 
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup(error) {
-    const data = await chrome.runtime.sendMessage({ action: "info" });
-    const { tabUrl, matchingSite, storage } = data;
+    const response = await chrome.runtime.sendMessage({ action: "info" });
+    const { tabUrl, matchingSite, storage } = response;
 
     // chkSiteEnabled.checked = !!matchingSite?.enabled;
     inpUrl.value = matchingSite?.url ?? tabUrl;
