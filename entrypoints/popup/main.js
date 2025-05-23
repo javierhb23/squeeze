@@ -42,15 +42,14 @@ async function filloutPopup(error) {
     inpUrl.value = matchingSite?.url ?? tabUrl;
     saveButtonStatus(!!matchingSite);
 
-    const styles = storage.globalStyles;
+    const styles = response.globalStyles;
 
     // Fill out style fields
     for (const prop in styles) {
-        const [number, unit] = styles[prop].match(/(\d+)(\D+)/).slice(1);
         const numberField = document.querySelector(SELECTORS[prop].number);
         const unitField = document.querySelector(SELECTORS[prop].unit);
-        numberField.value = number;
-        unitField.value = unit;
+        numberField.value = styles[prop].number;
+        unitField.value = styles[prop].unit;
     }
 
     // Determine which radio input should be checked for "Apply limits to"

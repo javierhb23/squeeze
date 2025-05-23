@@ -52,4 +52,52 @@ async function applyStyles(url, tabId) {
     }
 }
 
-export { getTab, styleTabs, applyStyles };
+/**
+ * @param {string} style - a CSS-Like length value (e.g: "100px", "33.3%")
+ *
+ * @typedef {Object} Style
+ * @property {string} number
+ * @property {string} unit
+ *
+ * @returns {Style}
+ */
+function parseStyle(style) {
+    const match = style
+        .replace(/\s+/g, "")
+        .match(/(?<number>-?\d*\.?\d*)(?<unit>\D*)/);
+
+    const number = match.groups.number;
+    const unit = match.groups.unit;
+
+    if (!number) {
+        throw new Error("Missing numeric value");
+    }
+
+    if (isNaN(parseFloat(number))) {
+        throw new Error("Invalid numeric value");
+    }
+
+    if (parseFloat(number) < 0) {
+        throw new Error("Value must not be negative");
+    }
+
+    if (!unit) {
+        throw new Error("Missing unit");
+    }
+
+    if (!["%", "px"].includes(unit)) {
+        throw new Error("Invalid unit. Must be one of 'px', '%'");
+    }
+
+    return match.groups
+}
+
+function splitCSSValues(styles) {
+    const split = {}
+    for (const prop in styles) {
+        split[prop] = parseStyle(styles[prop]);
+    }
+    return split;
+}
+
+export { getTab, styleTabs, applyStyles, parseStyle, splitCSSValues };

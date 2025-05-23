@@ -1,5 +1,5 @@
 import SitesStorage from "./classes/SitesStorage.js";
-import { getTab, applyStyles, styleTabs } from "./utils.js";
+import { getTab, applyStyles, styleTabs, splitCSSValues, parseStyle } from "./utils.js";
 
 function messageHandler(request, sender, sendResponse) {
     const actions = {
@@ -44,12 +44,14 @@ const info = errorHandler(async (request) => {
     const storage = await chrome.storage.local.get();
     const sites = new SitesStorage(storage.sites);
     const matchingSite = sites.search(tab.url)[0];
+    const globalStyles = splitCSSValues(storage.globalStyles);
 
     const response = {
         request,
         tabUrl: tab.url,
         matchingSite: matchingSite ?? null,
-        storage: storage
+        storage: storage,
+        globalStyles
     };
     return response;
 });
@@ -59,15 +61,10 @@ const updateStyles = errorHandler(async (request) => {
 
     // Check for errors in request
     if (!styles) throw new Error("Expected 'styles' in request object");
+
+    // Check for errors in each style declaration
     for (const prop in styles) {
-        const number = styles[prop].match(/\d+/);
-        const unit = styles[prop].match(/\D+/);
-        if (!number) throw new Error("Missing numeric value");
-        if (!unit) throw new Error("Missing unit value");
-        const isInvalidNumber = string => isNaN(parseFloat(string));
-        const isInvalidUnit = string => !["%", "px"].includes(string);
-        if (isInvalidNumber(number[0])) throw new Error("Invalid numeric value");
-        if (isInvalidUnit(unit[0])) throw new Error("Invalid unit. Must be one of 'px', '%'");
+        parseStyle(styles[prop]); // Will throw an Error if a style is invalid
     }
 
     await chrome.storage.local.set({ globalStyles: request.styles });
