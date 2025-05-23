@@ -55,9 +55,27 @@ const info = errorHandler(async (request) => {
 });
 
 const updateStyles = errorHandler(async (request) => {
-    const response = { request };
+    const styles = request.styles;
+
+    // Check for errors in request
+    if (!styles) throw new Error("Expected 'styles' in request object");
+    for (const prop in styles) {
+        const number = styles[prop].match(/\d+/);
+        const unit = styles[prop].match(/\D+/);
+        if (!number) throw new Error("Missing numeric value");
+        if (!unit) throw new Error("Missing unit value");
+        const isInvalidNumber = string => isNaN(parseFloat(string));
+        const isInvalidUnit = string => !["%", "px"].includes(string);
+        if (isInvalidNumber(number[0])) throw new Error("Invalid numeric value");
+        if (isInvalidUnit(unit[0])) throw new Error("Invalid unit. Must be one of 'px', '%'");
+    }
+
     await chrome.storage.local.set({ globalStyles: request.styles });
     styleTabs();
+    const response = {
+        request: request,
+        status: "Successfully updated global styles"
+    };
     return response;
 });
 
