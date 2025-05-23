@@ -11,6 +11,7 @@ const templateSite = document.querySelector("#site-list-item-template");
 const templateError = document.querySelector("#error-template");
 const errorContainer = document.querySelector("#error-container");
 
+inpUrl.addEventListener("input", () => saveButtonStatus(false));
 btnSave.addEventListener("click", saveButtonClicked);
 btnApply.addEventListener("click", applyButtonClicked);
 document.querySelectorAll(".control").forEach(input => {
@@ -40,8 +41,7 @@ async function filloutPopup(error) {
 
     // chkSiteEnabled.checked = !!matchingSite?.enabled;
     inpUrl.value = matchingSite?.url ?? tabUrl;
-    iconSaveStatus.className = !!matchingSite ? 'bi-bookmark-check-fill' : 'bi-bookmark';
-    spanSaveStatus.innerText = !!matchingSite ? "Saved" : "Save";
+    saveButtonStatus(!!matchingSite);
 
     const styles = storage.globalStyles;
 
@@ -66,6 +66,18 @@ async function filloutPopup(error) {
     if (!!error) {
         displayError(error);
     }
+}
+
+/**
+ * Sets save button text and icon to display whether the current URL is saved or not.
+ *
+ * @param {boolean} isSaved - The save status of the current URL
+ * - *true* - sets text to "Saved"; sets icon to bookmark with a checkmark
+ * - *false* - sets text to "Save"; sets icon to bookmark outline
+ */
+function saveButtonStatus(isSaved) {
+    spanSaveStatus.innerText = isSaved ? "Saved" : "Save";
+    iconSaveStatus.className = isSaved ? 'bi-bookmark-check-fill' : 'bi-bookmark';
 }
 
 function displayError(error) {
