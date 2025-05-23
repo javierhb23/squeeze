@@ -18,6 +18,9 @@ document.querySelectorAll(".control").forEach(input => {
     // Undisable apply button on input events on style fields
     input.addEventListener("input", () => btnApply.disabled = false);
 });
+document.querySelectorAll("[name=inverse]").forEach(radio => {
+    radio.addEventListener("change", inverseRadioSwitched)
+});
 
 filloutPopup();
 
@@ -145,6 +148,14 @@ async function applyButtonClicked() {
     const response = await chrome.runtime.sendMessage({
         action: "update_styles",
         styles: styles
+    });
+    filloutPopup(response.error);
+}
+
+async function inverseRadioSwitched(event) {
+    const response = await chrome.runtime.sendMessage({
+        action: "toggle_inverse",
+        value: event.target.value
     });
     filloutPopup(response.error);
 }

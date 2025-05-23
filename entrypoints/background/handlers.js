@@ -7,6 +7,7 @@ function messageHandler(request, sender, sendResponse) {
         "add_site": addSite,
         "remove": removeSite,
         "update_styles": updateStyles,
+        "toggle_inverse": toggleInverse,
     };
     const requestHandler = actions[request.action];
     requestHandler(request).then(sendResponse);
@@ -93,6 +94,28 @@ const removeSite = errorHandler(async (request) => {
     await sites.remove(request.url);
     styleTabs();
     response.status = `${request.url} was removed successfully`
+    return response;
+});
+
+const toggleInverse = errorHandler(async (request) => {
+    const value = (() => {
+        // Convert string to boolean
+        switch (request.value) {
+            case "true": return true;
+            case "false": return false;
+            default: throw new Error("Hey pal, what's the big idea here?");
+        }
+    })();
+
+    await chrome.storage.local.set({
+        inverse: value
+    });
+
+    styleTabs();
+    const response = {
+        request: request,
+        status: `Inverse has been set to ${value}`
+    };
     return response;
 });
 
