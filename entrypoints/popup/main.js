@@ -39,7 +39,6 @@ async function filloutPopup(error) {
     const response = await chrome.runtime.sendMessage({ action: "info" });
     const { tabUrl, matchingSite, storage } = response;
 
-    // chkSiteEnabled.checked = !!matchingSite?.enabled;
     inpUrl.value = matchingSite?.url ?? tabUrl;
     saveButtonStatus(!!matchingSite);
 
