@@ -44,10 +44,11 @@ class Site {
         // Check url length
         if (url.length < 1) throw new Error("URL length must be at least 1");
 
-        // Check for invalid scheme
-        const invalidSchemes = ["brave://", "chrome://"];
-        const hasInvalidScheme = invalidSchemes.some(scheme => url.startsWith(scheme));
-        if (hasInvalidScheme) throw new Error(`${url} is not a valid URL`);
+        // Check for incompatible URL prefixes
+        const prefixes = ["brave://", "chrome://", "about:"];
+        if (prefixes.some(prefix => url.startsWith(prefix))) {
+            throw new Error(`URL ${url} is incompatible with this extension`);
+        }
 
         return url;
     }
