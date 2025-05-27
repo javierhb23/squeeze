@@ -47,7 +47,12 @@ class Site {
         // Check for incompatible URL prefixes
         const prefixes = ["brave://", "chrome://", "about:"];
         if (prefixes.some(prefix => url.startsWith(prefix))) {
-            throw new Error(`URL ${url} is incompatible with this extension`);
+            // Ellipsize URL if it's too long
+            const maxLength = 30;
+            const shortURL = url.length <= maxLength 
+                ? url
+                : `${url.slice(0, maxLength)}...`;
+            throw new Error(`URL "${shortURL}" is incompatible with this extension`);
         }
 
         return url;
