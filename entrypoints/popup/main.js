@@ -107,20 +107,21 @@ function displayStoredSites(sites) {
 
     // Define Remove site ('x') button behavior on each list element
     document.querySelectorAll("[name=btn-remove-site]").forEach((btn) => {
-        btn.addEventListener("click", removeSiteClicked);
+        btn.addEventListener("click", removeSiteClicked, { capture: true });
     });
 
     function appendSite(site) {
         const li = templateSite.content.cloneNode(true);
-        const span = li.querySelector("span");
-        span.innerHTML = site.url;
+        const inpSiteURL = li.querySelector("[name=site-url]");
+        inpSiteURL.value = site.url;
+        inpSiteURL.onbeforeinput = e => e.preventDefault();
         ulSites.appendChild(li);
     }
 }
 
 async function removeSiteClicked(event) {
-    const li = event.target.parentNode;
-    const url = li.querySelector("[name=site-url]").innerHTML;
+    const li = event.currentTarget.parentNode;
+    const url = li.querySelector("[name=site-url]").value;
     const response = await chrome.runtime.sendMessage({
         action: "remove",
         url: url

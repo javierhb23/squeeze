@@ -103,9 +103,13 @@
     </div>
 </body>
 <template id="site-list-item-template">
-    <li class="list-group-item list-group-item-action d-flex">
-        <span class="me-auto" name="site-url"></span>
-        <button type="button" class="btn-close" name="btn-remove-site" aria-label="Remove"></button>
+    <li class="list-group-item p-0">
+        <div class="input-group">
+            <input type="text" class="form-control" name="site-url" autocomplete="off">
+            <button type="button" class="input-group-text" name="btn-remove-site">
+                <i class="bi-x-lg"></i>
+            </button>
+        </div>
     </li>
 </template>
 <template id="error-template">
