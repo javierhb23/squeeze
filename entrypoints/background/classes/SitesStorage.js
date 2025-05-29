@@ -43,7 +43,7 @@ class SitesStorage {
 
         return this.sites
             .filter(site => site.matchesURL(url))
-            .sort((siteA, siteB) => siteA.url.length - siteB.url.length);
+            .sort((siteA, siteB) => siteB.url.length - siteA.url.length);
     }
 
     /**
