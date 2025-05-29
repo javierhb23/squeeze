@@ -46,7 +46,7 @@ async function filloutPopup(error) {
 
     inpUrl.value = matchingSite?.url ?? (() => {
         const url = new URL(tabUrl);
-        return url.origin + url.pathname;
+        return url.href.replace(url.search, '');
     })();
     saveButtonStatus(!!matchingSite);
 
@@ -138,18 +138,24 @@ async function saveButtonClicked(event) {
     const chooseURL = (urlString) => {
         const url = new URL(urlString);
         if (event.currentTarget === liIncludeSiblings) {
-            const lastSlash = url.pathname.lastIndexOf("/");
-            return url.origin + url.pathname.slice(0, lastSlash + 1) + "*";
+            const lastSlash = url.href.lastIndexOf('/');
+            const parentURL = url.href.replace(url.search, '').slice(0, lastSlash + 1);
+            return parentURL.concat(lastSlash < 0 ? '/*' : '*');
         } else {
-            return url.origin + url.pathname;
+            return url.href.replace(url.search, "");
         }
     };
 
-    const response = await chrome.runtime.sendMessage({
-        action: "add_site",
-        url: chooseURL(inpUrl.value)
-    });
-    filloutPopup(response.error);
+    try {
+        const newURL = chooseURL(inpUrl.value);
+        const response = await chrome.runtime.sendMessage({
+            action: "add_site",
+            url: newURL
+        });
+        filloutPopup(response.error);
+    } catch (error) {
+        displayError(error);
+    }
 }
 
 async function applyButtonClicked() {
