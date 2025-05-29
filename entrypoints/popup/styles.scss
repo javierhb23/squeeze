@@ -1,2 +1,16 @@
 @import "bootstrap/dist/css/bootstrap.min";
 @import "bootstrap-icons/font/bootstrap-icons.min";
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 500px;
+    height: 600px;
+    overflow-x: hidden;
+}
+
+#sites-list-group .input-group * {
+    border: 0;
+}
