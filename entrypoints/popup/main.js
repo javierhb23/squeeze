@@ -2,6 +2,7 @@ import './styles.scss';
 import 'bootstrap';
 
 const inpUrl = document.querySelector("#url");
+const liIncludeSiblings = document.querySelector("#include-siblings");
 const btnApply = document.querySelector("#apply-btn");
 const btnSave = document.querySelector("#save-btn");
 const spanSaveStatus = document.querySelector("#save-btn-text");
@@ -13,6 +14,7 @@ const errorContainer = document.querySelector("#error-container");
 
 inpUrl.addEventListener("input", () => saveButtonStatus(false));
 btnSave.addEventListener("click", saveButtonClicked);
+liIncludeSiblings.addEventListener("click", saveButtonClicked, { capture: true });
 btnApply.addEventListener("click", applyButtonClicked);
 document.querySelectorAll(".control").forEach(input => {
     // Undisable apply button on input events on style fields
@@ -42,7 +44,10 @@ async function filloutPopup(error) {
     const response = await chrome.runtime.sendMessage({ action: "info" });
     const { tabUrl, matchingSite, storage } = response;
 
-    inpUrl.value = matchingSite?.url ?? tabUrl;
+    inpUrl.value = matchingSite?.url ?? (() => {
+        const url = new URL(tabUrl);
+        return url.origin + url.pathname;
+    })();
     saveButtonStatus(!!matchingSite);
 
     const styles = response.globalStyles;
@@ -129,10 +134,20 @@ async function removeSiteClicked(event) {
     filloutPopup(response.error);
 };
 
-async function saveButtonClicked() {
+async function saveButtonClicked(event) {
+    const chooseURL = (urlString) => {
+        const url = new URL(urlString);
+        if (event.currentTarget === liIncludeSiblings) {
+            const lastSlash = url.pathname.lastIndexOf("/");
+            return url.origin + url.pathname.slice(0, lastSlash + 1) + "*";
+        } else {
+            return url.origin + url.pathname;
+        }
+    };
+
     const response = await chrome.runtime.sendMessage({
         action: "add_site",
-        url: inpUrl.value
+        url: chooseURL(inpUrl.value)
     });
     filloutPopup(response.error);
 }
