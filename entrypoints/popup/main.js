@@ -41,9 +41,8 @@ const SELECTORS = {
 
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup(error) {
-    const response = await chrome.runtime.sendMessage({ action: "info" });
+    const response = await browser.runtime.sendMessage({ action: "info" });
     const { tabUrl, matchingSite, storage } = response;
-
     inpUrl.value = matchingSite?.url ?? (() => {
         const url = new URL(tabUrl);
         return url.href.replace(url.search, '');
@@ -127,7 +126,7 @@ function displayStoredSites(sites) {
 async function removeSiteClicked(event) {
     const li = event.currentTarget.parentNode;
     const url = li.querySelector("[name=site-url]").value;
-    const response = await chrome.runtime.sendMessage({
+    const response = await browser.runtime.sendMessage({
         action: "remove",
         url: url
     });
@@ -148,7 +147,7 @@ async function saveButtonClicked(event) {
 
     try {
         const newURL = chooseURL(inpUrl.value);
-        const response = await chrome.runtime.sendMessage({
+        const response = await browser.runtime.sendMessage({
             action: "add_site",
             url: newURL
         });
@@ -167,7 +166,7 @@ async function applyButtonClicked() {
         styles[prop] = numberField.value + unitField.value;
     }
 
-    const response = await chrome.runtime.sendMessage({
+    const response = await browser.runtime.sendMessage({
         action: "update_styles",
         styles: styles
     });
@@ -175,7 +174,7 @@ async function applyButtonClicked() {
 }
 
 async function inverseRadioSwitched(event) {
-    const response = await chrome.runtime.sendMessage({
+    const response = await browser.runtime.sendMessage({
         action: "toggle_inverse",
         value: event.target.value
     });

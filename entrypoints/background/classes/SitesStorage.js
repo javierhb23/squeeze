@@ -28,7 +28,8 @@ class SitesStorage {
      */
     async store(sites) {
         this.sites = sites;
-        await chrome.storage.local.set({ sites });
+        sites = JSON.parse(JSON.stringify(sites)); // Fixes Firefox "DataCloneError: Function object could not be cloned."
+        await browser.storage.local.set({ sites });
         return this;
     }
 

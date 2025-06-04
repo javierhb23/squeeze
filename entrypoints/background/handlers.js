@@ -42,7 +42,7 @@ function errorHandler(fn) {
 
 const info = errorHandler(async (request) => {
     const tab = await getTab();
-    const storage = await chrome.storage.local.get();
+    const storage = await browser.storage.local.get();
     const sites = new SitesStorage(storage.sites);
     const matchingSite = sites.search(tab.url)[0];
     const globalStyles = splitCSSValues(storage.globalStyles);
@@ -68,7 +68,7 @@ const updateStyles = errorHandler(async (request) => {
         parseStyle(styles[prop]); // Will throw an Error if a style is invalid
     }
 
-    await chrome.storage.local.set({ globalStyles: request.styles });
+    await browser.storage.local.set({ globalStyles: request.styles });
     styleTabs();
     const response = {
         request: request,
@@ -78,18 +78,19 @@ const updateStyles = errorHandler(async (request) => {
 });
 
 const addSite = errorHandler(async (request) => {
-    const storage = await chrome.storage.local.get();
+    const storage = await browser.storage.local.get();
     const sites = new SitesStorage(storage.sites);
     const response = { request };
     await sites.add(request.url);
     styleTabs();
     response.status = `${request.url} was added to storage successfully`
+    console.log(response)
     return response;
 });
 
 const removeSite = errorHandler(async (request) => {
     const response = { request };
-    const storage = await chrome.storage.local.get("sites");
+    const storage = await browser.storage.local.get("sites");
     const sites = new SitesStorage(storage.sites);
     await sites.remove(request.url);
     styleTabs();
@@ -107,7 +108,7 @@ const toggleInverse = errorHandler(async (request) => {
         }
     })();
 
-    await chrome.storage.local.set({
+    await browser.storage.local.set({
         inverse: value
     });
 
