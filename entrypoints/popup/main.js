@@ -5,6 +5,7 @@ const inpUrl = document.querySelector("#url");
 const liIncludeSiblings = document.querySelector("#include-siblings");
 const btnApply = document.querySelector("#apply-btn");
 const btnSave = document.querySelector("#save-btn");
+const btnSaveDropdown = document.querySelector("#save-btn-dropdown");
 const spanSaveStatus = document.querySelector("#save-btn-text");
 const iconSaveStatus = document.querySelector("#save-btn-icon");
 const ulSites = document.querySelector("#sites-list-group");
@@ -42,12 +43,9 @@ const SELECTORS = {
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup(error) {
     const response = await browser.runtime.sendMessage({ action: "info" });
-    const { tabUrl, matchingSite, storage } = response;
-    inpUrl.value = matchingSite?.url ?? (() => {
-        const url = new URL(tabUrl);
-        return url.href.replace(url.search, '');
-    })();
-    saveButtonStatus(!!matchingSite);
+    const { tabUrl, matchingSite, storage, valid } = response;
+    inpUrl.value = matchingSite?.url ?? tabUrl;
+    saveButtonStatus(!!matchingSite, response.valid);
 
     const styles = response.globalStyles;
 
@@ -79,10 +77,21 @@ async function filloutPopup(error) {
  * @param {boolean} isSaved - The save status of the current URL
  * - *true* - sets text to "Saved"; sets icon to bookmark with a checkmark
  * - *false* - sets text to "Save"; sets icon to bookmark outline
+ * @param {boolean} isValidURL - Setting this to false disables both Save button and adjacent
+ * dropdown menu.
  */
-function saveButtonStatus(isSaved) {
+function saveButtonStatus(isSaved, isValidURL = true) {
     spanSaveStatus.innerText = isSaved ? "Saved" : "Save";
     iconSaveStatus.className = isSaved ? 'bi-bookmark-check-fill' : 'bi-bookmark';
+
+    if (!isValidURL) {
+        btnSave.disabled = true;
+        btnSaveDropdown.disabled = true;
+        iconSaveStatus.className = 'bi-x-lg';
+    } else {
+        btnSave.disabled = false;
+        btnSaveDropdown.disabled = false;
+    }
 }
 
 function displayError(error) {
@@ -134,22 +143,11 @@ async function removeSiteClicked(event) {
 };
 
 async function saveButtonClicked(event) {
-    const chooseURL = (urlString) => {
-        const url = new URL(urlString);
-        if (event.currentTarget === liIncludeSiblings) {
-            const lastSlash = url.href.lastIndexOf('/');
-            const parentURL = url.href.replace(url.search, '').slice(0, lastSlash + 1);
-            return parentURL.concat(lastSlash < 0 ? '/*' : '*');
-        } else {
-            return url.href.replace(url.search, "");
-        }
-    };
-
     try {
-        const newURL = chooseURL(inpUrl.value);
         const response = await browser.runtime.sendMessage({
             action: "add_site",
-            url: newURL
+            url: inpUrl.value,
+            includeSiblings: event.currentTarget === liIncludeSiblings,
         });
         filloutPopup(response.error);
     } catch (error) {

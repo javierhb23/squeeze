@@ -64,10 +64,13 @@ class SitesStorage {
 
     /**
      * @param {string} url
+     * @param {boolean} includeSiblings
      * @returns {Promise<SitesStorage>}
      */
-    add(url) {
+    add(url, includeSiblings) {
         url = Site.parseURL(url);
+        if (includeSiblings)
+            url = Site.getURLSiblings(url);
         const site = new Site(url);
         this.checkDuplicates(site);
         const sites = this.sites;

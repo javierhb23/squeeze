@@ -1,3 +1,4 @@
+import Site from "./classes/Site.js"
 import SitesStorage from "./classes/SitesStorage.js";
 import { getTab, applyStyles, styleTabs, splitCSSValues, parseStyle } from "./utils.js";
 
@@ -46,10 +47,12 @@ const info = errorHandler(async (request) => {
     const sites = new SitesStorage(storage.sites);
     const matchingSite = sites.search(tab.url)[0];
     const globalStyles = splitCSSValues(storage.globalStyles);
+    const url = Site.cleanURL(tab.url);
 
     const response = {
         request,
-        tabUrl: tab.url,
+        tabUrl: url,
+        valid: Site.isValidURL(url),
         matchingSite: matchingSite ?? null,
         storage: storage,
         globalStyles
@@ -81,7 +84,7 @@ const addSite = errorHandler(async (request) => {
     const storage = await browser.storage.local.get();
     const sites = new SitesStorage(storage.sites);
     const response = { request };
-    await sites.add(request.url);
+    await sites.add(request.url, request.includeSiblings);
     styleTabs();
     response.status = `${request.url} was added to storage successfully`
     console.log(response)
