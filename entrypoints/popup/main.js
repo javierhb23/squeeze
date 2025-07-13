@@ -1,5 +1,6 @@
 import './styles.scss';
 import 'bootstrap';
+import { SELECTORS } from '/utils/definitions.js';
 
 const inpUrl = document.querySelector("#url");
 const liIncludeSiblings = document.querySelector("#include-siblings");
@@ -26,19 +27,6 @@ document.querySelectorAll("[name=inverse]").forEach(radio => {
 });
 
 filloutPopup();
-
-/* Each key is the name of a CSS property. Their values are composed of the HTML id's for both the
-numeric and unit portion in the popup window's style control fields. */
-const SELECTORS = {
-    maxWidth: {
-        number: "#max-width",
-        unit: "#max-width-unit"
-    },
-    marginLeft: {
-        number: "#margin-left",
-        unit: "#margin-left-unit"
-    }
-};
 
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup(error) {
