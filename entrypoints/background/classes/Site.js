@@ -49,7 +49,7 @@ class Site {
         if (prefixes.some(prefix => url.startsWith(prefix))) {
             // Ellipsize URL if it's too long
             const maxLength = 30;
-            const shortURL = url.length <= maxLength 
+            const shortURL = url.length <= maxLength
                 ? url
                 : `${url.slice(0, maxLength)}...`;
             throw new Error(`URL "${shortURL}" is incompatible with this extension`);
