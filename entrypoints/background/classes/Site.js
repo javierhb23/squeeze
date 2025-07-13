@@ -57,6 +57,46 @@ class Site {
 
         return url;
     }
+
+    static isValidURL(url) {
+        try {
+            this.parseURL(url);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /** Returns URL without URI query or fragment */
+    static cleanURL(url) {
+        // '?' for URL args, '#' for fragment 
+        // See https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
+        for (const marker of ['?', '#']) {
+            const index = url.lastIndexOf(marker);
+            if (index > -1) {
+                url = url.slice(0, index);
+            }
+        }
+        return url;
+    }
+
+    static getURLSiblings(urlString) {
+        // Any URL with trailing slash need only be suffixed with '*'
+        if (urlString.slice(-1) === '/')
+            return urlString + '*';
+
+        // Split URL into protocol and rest of URL
+        let [protocol, url] = urlString.includes("://") ? urlString.split("://") : [undefined, urlString];
+        protocol = protocol ? `${protocol}://` : "";
+
+        // Remove anything after the last forward-slash (not including)
+        const slash = url.lastIndexOf('/');
+        if (slash > -1) {
+            url = url.slice(0, slash + 1);
+        }
+
+        return protocol + url + "*";
+    }
 }
 
 export default Site;
