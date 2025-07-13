@@ -38,17 +38,9 @@ async function applyStyles(url, tabId) {
             styles[prop] = enabled ? chosenStyles[prop] : null;
         }
 
-        browser.tabs.sendMessage(tabId, { styles }).catch(error => {
-            const contentScriptError = "Error: Could not establish connection. Receiving end does not exist."
-            if (error.toString() === contentScriptError) {
-                console.log(`Cannot modify tab with url ${url} (tab id ${tabId}).`);
-            } else {
-                console.error(error)
-            }
-        });
+        browser.tabs.sendMessage(tabId, { styles });
     } catch (error) {
-        console.log(error);
-        console.log("Skipping", url);
+        console.log("Cannot apply styles to", url);
     }
 }
 
