@@ -45,9 +45,9 @@ const info = errorHandler(async (request) => {
     const tab = await getTab();
     const storage = await browser.storage.local.get();
     const sites = new SitesStorage(storage.sites);
-    const matchingSite = sites.search(tab.url)[0];
     const globalStyles = splitCSSValues(storage.globalStyles);
     const url = Site.cleanURL(tab.url);
+    const matchingSite = sites.get(url);
 
     const response = {
         request,

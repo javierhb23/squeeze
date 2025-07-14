@@ -36,8 +36,8 @@ async function refreshPopup(event) {
 /** Retrieves relevant data from storage into popup window. */
 async function filloutPopup(response) {
     const { tabUrl, matchingSite, storage, valid } = response;
-    inpUrl.value = matchingSite?.url ?? tabUrl;
-    saveButtonStatus(!!matchingSite, response.valid);
+    inpUrl.value = tabUrl;
+    saveButtonStatus(!!matchingSite, valid);
 
     const styles = response.globalStyles;
 
