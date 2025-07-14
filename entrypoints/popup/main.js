@@ -162,8 +162,8 @@ async function inverseRadioSwitched(event) {
 
 /**
  * Message service worker and check for errors in response. If there are no errors, refresh popup
- * unless specified otherwise by optional parameter `noRefreshPopup`. Otherwise display display
- * error message.
+ * unless specified otherwise by optional parameter `noRefreshPopup`. Otherwise display error
+ * message.
  *
  * @param {*} request - request to pass onto browser.runtime.sendMessage().
  * @param {boolean} noRefreshPopup - Do not refresh popup on success.
