@@ -14,6 +14,7 @@ const templateSite = document.querySelector("#site-list-item-template");
 const templateError = document.querySelector("#error-template");
 const errorContainer = document.querySelector("#error-container");
 
+document.addEventListener("DOMContentLoaded", refreshPopup);
 inpUrl.addEventListener("input", () => saveButtonStatus(false));
 btnSave.addEventListener("click", saveButtonClicked);
 liIncludeSiblings.addEventListener("click", saveButtonClicked, { capture: true });
@@ -26,11 +27,14 @@ document.querySelectorAll("[name=inverse]").forEach(radio => {
     radio.addEventListener("change", inverseRadioSwitched)
 });
 
-filloutPopup();
+async function refreshPopup(event) {
+    const response = await messageServiceWorker({ action: "info" }, true);
+    if (!response.error)
+        filloutPopup(response);
+}
 
 /** Retrieves relevant data from storage into popup window. */
-async function filloutPopup(error) {
-    const response = await browser.runtime.sendMessage({ action: "info" });
+async function filloutPopup(response) {
     const { tabUrl, matchingSite, storage, valid } = response;
     inpUrl.value = matchingSite?.url ?? tabUrl;
     saveButtonStatus(!!matchingSite, response.valid);
@@ -53,10 +57,6 @@ async function filloutPopup(error) {
     activeRadio.checked = true; // Toggle the proper radio input
 
     displayStoredSites(storage.sites);
-
-    if (!!error) {
-        displayError(error);
-    }
 }
 
 /**
@@ -83,9 +83,10 @@ function saveButtonStatus(isSaved, isValidURL = true) {
 }
 
 function displayError(error) {
+    for (const e of errorContainer.children) { e.remove(); } // Remove previous error message(s)
     const errorNode = templateError.content.cloneNode(true);
-    errorNode.querySelector("#error-name").innerText = error.name;
-    errorNode.querySelector("#error-message").innerText = error.message;
+    errorNode.querySelector("#error-name").textContent = error.name;
+    errorNode.querySelector("#error-message").textContent = error.message;
     errorContainer.appendChild(errorNode);
 }
 
@@ -123,24 +124,18 @@ function displayStoredSites(sites) {
 async function removeSiteClicked(event) {
     const li = event.currentTarget.parentNode;
     const url = li.querySelector("[name=site-url]").value;
-    const response = await browser.runtime.sendMessage({
+    const response = await messageServiceWorker({
         action: "remove",
         url: url
     });
-    filloutPopup(response.error);
 };
 
 async function saveButtonClicked(event) {
-    try {
-        const response = await browser.runtime.sendMessage({
-            action: "add_site",
-            url: inpUrl.value,
-            includeSiblings: event.currentTarget === liIncludeSiblings,
-        });
-        filloutPopup(response.error);
-    } catch (error) {
-        displayError(error);
-    }
+    const response = await messageServiceWorker({
+        action: "add_site",
+        url: inpUrl.value,
+        includeSiblings: event.currentTarget === liIncludeSiblings,
+    });
 }
 
 async function applyButtonClicked() {
@@ -152,17 +147,34 @@ async function applyButtonClicked() {
         styles[prop] = numberField.value + unitField.value;
     }
 
-    const response = await browser.runtime.sendMessage({
+    const response = await messageServiceWorker({
         action: "update_styles",
         styles: styles
     });
-    filloutPopup(response.error);
 }
 
 async function inverseRadioSwitched(event) {
-    const response = await browser.runtime.sendMessage({
+    const response = await messageServiceWorker({
         action: "toggle_inverse",
         value: event.target.value
     });
-    filloutPopup(response.error);
+}
+
+/**
+ * Message service worker and check for errors in response. If there are no errors, refresh popup
+ * unless specified otherwise by optional parameter `noRefreshPopup`. Otherwise display display
+ * error message.
+ *
+ * @param {*} request - request to pass onto browser.runtime.sendMessage().
+ * @param {boolean} noRefreshPopup - Do not refresh popup on success.
+ */
+async function messageServiceWorker(request, noRefreshPopup = false) {
+    const response = await browser.runtime.sendMessage(request);
+
+    if (!!response.error)
+        displayError(response.error);
+    else if (!noRefreshPopup)
+        refreshPopup();
+
+    return response;
 }
