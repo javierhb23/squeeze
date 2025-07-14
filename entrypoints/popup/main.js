@@ -15,7 +15,7 @@ const templateError = document.querySelector("#error-template");
 const errorContainer = document.querySelector("#error-container");
 
 document.addEventListener("DOMContentLoaded", refreshPopup);
-inpUrl.addEventListener("input", () => saveButtonStatus(false));
+inpUrl.addEventListener("input", () => setSaveButtonStatus(false));
 btnSave.addEventListener("click", saveButtonClicked);
 liIncludeSiblings.addEventListener("click", saveButtonClicked, { capture: true });
 btnApply.addEventListener("click", applyButtonClicked);
@@ -37,7 +37,7 @@ async function refreshPopup(event) {
 async function filloutPopup(response) {
     const { tabUrl, matchingSite, storage, valid } = response;
     inpUrl.value = tabUrl;
-    saveButtonStatus(!!matchingSite, valid);
+    setSaveButtonStatus(!!matchingSite, valid);
 
     const styles = response.globalStyles;
 
@@ -68,7 +68,7 @@ async function filloutPopup(response) {
  * @param {boolean} isValidURL - Setting this to false disables both Save button and adjacent
  * dropdown menu.
  */
-function saveButtonStatus(isSaved, isValidURL = true) {
+function setSaveButtonStatus(isSaved, isValidURL = true) {
     spanSaveStatus.innerText = isSaved ? "Saved" : "Save";
     iconSaveStatus.className = isSaved ? 'bi-bookmark-check-fill' : 'bi-bookmark';
 
