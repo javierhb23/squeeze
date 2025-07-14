@@ -7,6 +7,14 @@ It is meant to improve viewing simplistic/old-school websites that are too wide 
 
 **Note**: Due to the simple method of applying these limits (see below), this extension will not work properly with more complex websites such as Github.
 
+## Features
+- Keep a list of websites that should be *Squeezed* automatically upon visiting.
+- Support for wildcards e.g.: `https://en.wikipedia.org/wiki/*`, `http://*.txt`.
+  - Includes a special Save button for storing web page "siblings" (web pages sharing the same parent URL).
+- Option to invert functionality: *Squeeze* all compatible* sites except those listed.
+
+> "compatible" meaning URLs with schemas other than `chrome://`, `brave://` or special pages like `about:*`.
+
 ## The code
 
 The extension itself is comprised of three key components:
