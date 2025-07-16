@@ -14,7 +14,11 @@ class Site {
         if (!target.url) throw new Error("Target does not have 'url' property");
 
         target.matchesURL = function (url) {
-            return RegExp(this.url.replaceAll("*", ".*")).test(url);
+            const pattern = this.url
+                .replaceAll("*", ".*")  // Turn asterisks into RegExp wildcards
+                .replaceAll("(","\\(")  // Escape open parentheses
+                .replaceAll(")","\\)"); // Escape close parentheses
+            return RegExp(pattern).test(url);
         }
 
         target.matchesDisabledSite = function (sites) {
