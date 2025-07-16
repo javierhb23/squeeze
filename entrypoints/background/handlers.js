@@ -86,8 +86,7 @@ const addSite = errorHandler(async (request) => {
     const response = { request };
     await sites.add(request.url, request.includeSiblings);
     styleTabs();
-    response.status = `${request.url} was added to storage successfully`
-    console.log(response)
+    response.status = `${request.url} was added to storage successfully`;
     return response;
 });
 
@@ -97,7 +96,7 @@ const removeSite = errorHandler(async (request) => {
     const sites = new SitesStorage(storage.sites);
     await sites.remove(request.url);
     styleTabs();
-    response.status = `${request.url} was removed successfully`
+    response.status = `${request.url} was removed successfully`;
     return response;
 });
 
