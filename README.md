@@ -1,5 +1,5 @@
 # Squeeze
-### Video Demo:  <URL HERE>
+### Video Demo:  https://www.youtube.com/watch?v=M77vGobC8r4
 ### Description
 Squeeze is a browser extension for Chrome and Firefox built with the [WXT
 Framework](https://wxt.dev/).
