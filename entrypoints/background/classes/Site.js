@@ -14,11 +14,10 @@ class Site {
         if (!target.url) throw new Error("Target does not have 'url' property");
 
         target.matchesURL = function (url) {
-            const pattern = this.url
-                .replaceAll("*", ".*")  // Turn asterisks into RegExp wildcards
-                .replaceAll("(","\\(")  // Escape open parentheses
-                .replaceAll(")","\\)")  // Escape close parentheses
-                .concat("$");           // Match endings
+
+            const pattern = RegExp.escape(this.url)
+                .replaceAll("\\*", ".*"); // Turn asterisks into RegExp wildcards
+
             return RegExp(pattern).test(url);
         }
 
