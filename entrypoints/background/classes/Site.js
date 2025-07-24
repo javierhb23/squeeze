@@ -42,9 +42,6 @@ class Site {
         // Check that url type is 'string'
         if (typeof url !== "string") throw new TypeError("URL is not a string");
 
-        // Remove all whitespaces
-        url = url.replaceAll(/\s/g, "");
-
         // Check url length
         if (url.length < 1) throw new Error("URL length must be at least 1");
 
@@ -71,10 +68,20 @@ class Site {
         }
     }
 
-    /** Returns URL without URI query or fragment */
+    /**
+     * Returns given URL, but removes:
+     * - Whitespaces
+     * - Trailing slash
+     * - URI query ('?', '&')
+     * - Fragment ('#')
+     *
+     * See https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
+     */
     static cleanURL(url) {
-        // '?' for URL args, '#' for fragment 
-        // See https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
+        url = url.replaceAll(/\s/g, "");                  // Remove whitespace
+        url = url.endsWith("/") ? url.slice(0, -1) : url; // Remove trailing slash
+
+        // Remove query and fragment
         for (const marker of ['?', '#']) {
             const index = url.lastIndexOf(marker);
             if (index > -1) {
