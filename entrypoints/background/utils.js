@@ -19,28 +19,27 @@ async function styleTabs() {
 }
 
 async function applyStyles(url, tabId) {
-    try {
-        url = Site.cleanURL(url);
-        Site.errorCheckURL(url);
-
-        const storage = await browser.storage.local.get();
-        const sites = new SitesStorage(storage.sites);
-        const site = sites.search(url)[0];
-        let enabled = !!site?.enabled;
-        if (storage.inverse) { enabled = !enabled }
-
-        const supportedStyles = Object.keys(SELECTORS);
-
-        const styles = {};
-        const chosenStyles = site?.useOwnStyles ? site.styles : storage.globalStyles;
-        for (const prop of supportedStyles) {
-            styles[prop] = enabled ? chosenStyles[prop] : null;
-        }
-
-        browser.tabs.sendMessage(tabId, { styles });
-    } catch (error) {
-        console.log("Cannot apply styles to", url);
+    url = Site.cleanURL(url);
+    if (!Site.isValidURL(url)) {
+        console.log("Cannot apply styles to", url)
+        return;
     }
+
+    const storage = await browser.storage.local.get();
+    const sites = new SitesStorage(storage.sites);
+    const site = sites.search(url)[0];
+    let enabled = !!site?.enabled;
+    if (storage.inverse) { enabled = !enabled }
+
+    const supportedStyles = Object.keys(SELECTORS);
+
+    const styles = {};
+    const chosenStyles = site?.useOwnStyles ? site.styles : storage.globalStyles;
+    for (const prop of supportedStyles) {
+        styles[prop] = enabled ? chosenStyles[prop] : null;
+    }
+
+    browser.tabs.sendMessage(tabId, { styles });
 }
 
 /**
