@@ -1,5 +1,6 @@
 import Site from "./classes/Site.js"
 import SitesStorage from "./classes/SitesStorage.js";
+import { SELECTORS } from "/utils/definitions.js";
 
 /** Equivalent browser.tabs.query({ active: true, lastFocusedWindow: true }) */
 async function getTab() {
@@ -27,10 +28,7 @@ async function applyStyles(url, tabId) {
         let enabled = !!site?.enabled;
         if (storage.inverse) { enabled = !enabled }
 
-        const supportedStyles = [
-            "maxWidth",
-            "marginLeft",
-        ];
+        const supportedStyles = Object.keys(SELECTORS);
 
         const styles = {};
         const chosenStyles = site?.useOwnStyles ? site.styles : storage.globalStyles;
