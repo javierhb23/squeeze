@@ -87,7 +87,7 @@ class Site {
 
     static getURLSiblings(urlString) {
         // Any URL with trailing slash need only be suffixed with '*'
-        if (urlString.slice(-1) === '/')
+        if (urlString.endsWith("/"))
             return urlString + '*';
 
         // Split URL into protocol and rest of URL
