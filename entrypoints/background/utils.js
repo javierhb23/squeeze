@@ -20,7 +20,8 @@ async function styleTabs() {
 
 async function applyStyles(url, tabId) {
     try {
-        url = Site.parseURL(url);
+        url = Site.cleanURL(url);
+        Site.errorCheckURL(url);
 
         const storage = await browser.storage.local.get();
         const sites = new SitesStorage(storage.sites);

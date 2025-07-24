@@ -33,9 +33,10 @@ class Site {
      * the checks fail.
      *
      * @param {string} url
+     * @throws {TypeError|Error}
      * @returns {string}
      */
-    static parseURL(url) {
+    static errorCheckURL(url) {
         // Check that url was given
         if (!url) throw new TypeError("No URL specified");
 
@@ -59,9 +60,15 @@ class Site {
         return url;
     }
 
+    /**
+     * Do error checking on given url. Returns true if no errors were found; false otherwise.
+     *
+     * @param {string} url
+     * @returns {boolean}
+     */
     static isValidURL(url) {
         try {
-            this.parseURL(url);
+            this.errorCheckURL(url);
             return true;
         } catch (e) {
             return false;

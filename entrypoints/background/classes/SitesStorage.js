@@ -68,7 +68,8 @@ class SitesStorage {
      * @returns {Promise<SitesStorage>}
      */
     add(url, includeSiblings) {
-        url = Site.parseURL(url);
+        url = Site.cleanURL(url);
+        Site.errorCheckURL(url);
         if (includeSiblings)
             url = Site.getURLSiblings(url);
         const site = new Site(url);
@@ -84,7 +85,8 @@ class SitesStorage {
      * @returns {Promise<SitesStorage>}
      */
     update(url, newSite) {
-        url = Site.parseURL(url);
+        url = Site.cleanURL(url);
+        Site.errorCheckURL(url);
         const sites = this.sites;
         const index = sites.findIndex(site => site.url === url);
 
