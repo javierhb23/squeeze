@@ -1,0 +1,28 @@
+name: WXT zip
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+      - name: Install dependencies and zip for Chrome MV3 and Firefox MV2
+        run: |
+          npm ci
+          npm run zip --if-present
+          npm run zip:firefox --if-present
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip files
+          path: |
+            .output/*.zip
