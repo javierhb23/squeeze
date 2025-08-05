@@ -16,7 +16,8 @@ class Site {
         target.matchesURL = function (url) {
 
             const pattern = RegExp.escape(this.url)
-                .replaceAll("\\*", ".*"); // Turn asterisks into RegExp wildcards
+                .replaceAll("\\*", ".*") // Turn asterisks into RegExp wildcards
+                .concat("$");            // Match until the end (exclusive)
 
             return RegExp(pattern).test(url);
         }
