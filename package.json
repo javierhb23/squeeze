@@ -6,9 +6,6 @@
     "bootstrap": "^5.3.6",
     "bootstrap-icons": "^1.12.1"
   },
-  "optionalDependencies": {
-    "jsdoc": "^4.0.4"
-  },
   "devDependencies": {
     "sass": "^1.87.0",
     "wxt": "^0.20.8"
