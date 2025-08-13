@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "sass": "^1.87.0",
+    "vitest": "^3.2.4",
     "wxt": "^0.20.8"
   },
   "scripts": {
@@ -15,6 +16,7 @@
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
     "build:firefox": "wxt build -b firefox",
+    "test": "vitest run",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "postinstall": "wxt prepare"
