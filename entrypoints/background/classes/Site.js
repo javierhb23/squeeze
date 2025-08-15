@@ -108,13 +108,13 @@ class Site {
         let [protocol, url] = urlString.includes("://") ? urlString.split("://") : [undefined, urlString];
         protocol = protocol ? `${protocol}://` : "";
 
-        // Remove anything after the last forward-slash (not including)
+        // Remove anything after the last forward-slash (including)
         const slash = url.lastIndexOf('/');
         if (slash > -1) {
-            url = url.slice(0, slash + 1);
+            url = url.slice(0, slash);
         }
 
-        return protocol + url + "*";
+        return protocol + url + "/*";
     }
 }
 
