@@ -10,13 +10,3 @@ export const SELECTORS = {
         unit: "#margin-left-unit"
     }
 };
-
-const testURLs = [
-    "https://en.wikipedia.org/wiki/Main_Page",  // Valid
-    "chrome://newtab",                          // Invalid
-    "en.wikipedia.org",                         // Not parseable by URL()
-    "about:blank",                              // Invalid, !URL()
-    "https://*.wikipedia.org/wiki/Main_Page",   // Asterisk, !URL()
-    "*.google.com/",                            // Asterisk, !URL(), trailing slash
-    "*.google.com/index?arg1=abc&arg2=qwe#TOC", // Asterisk, !URL(), query, fragment
-];
