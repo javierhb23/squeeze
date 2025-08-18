@@ -3,7 +3,7 @@ import { defineConfig } from "wxt";
 export default defineConfig({
     manifest: {
         "name": "Squeeze",
-        "permissions": ["tabs", "scripting", "storage", "webNavigation"],
+        "permissions": ["tabs", "storage", "webNavigation"],
     },
     // https://wxt.dev/guide/essentials/config/vite.html#change-vite-config
     vite: () => ({
