@@ -1,3 +1,5 @@
+import {default as escape} from "regexp.escape";
+
 class Site {
     constructor(url, enabled = true, useOwnStyles = false, styles = {}) {
         this.url = url;
@@ -14,8 +16,7 @@ class Site {
         if (!target.url) throw new Error("Target does not have 'url' property");
 
         target.matchesURL = function (url) {
-
-            const pattern = RegExp.escape(this.url)
+            const pattern = escape(this.url)
                 .replaceAll("\\*", ".*") // Turn asterisks into RegExp wildcards
                 .concat("$");            // Match until the end (exclusive)
 
