@@ -8,26 +8,19 @@ class Site {
         this.styles = styles
     }
 
-    /**
-     * Since objects saved to storage do not preserve their methods (functions), this function must
-     * be called to attach functionality to them.
-     */
-    static addMatchFunctions(target) {
-        if (!target.url) throw new Error("Target does not have 'url' property");
+    static matchesURL(site, url) {
+        const pattern = escape(site.url)
+            .replaceAll("\\*", ".*") // Turn asterisks into RegExp wildcards
+            .concat("$");            // Match until the end (exclusive)
 
-        target.matchesURL = function (url) {
-            const pattern = escape(this.url)
-                .replaceAll("\\*", ".*") // Turn asterisks into RegExp wildcards
-                .concat("$");            // Match until the end (exclusive)
+        return RegExp(pattern).test(url);
+    }
 
-            return RegExp(pattern).test(url);
-        }
-
-        target.matchesDisabledSite = function (sites) {
-            return sites.some(site => this.matchesURL(site.url) && site.enabled === false);
-        }
-
-        return target;
+    static matchesDisabledSite(site, sites) {
+        return sites.some(s =>
+            s.enabled === false &&
+            Site.matchesURL(site, s.url)
+        );
     }
 
     /**

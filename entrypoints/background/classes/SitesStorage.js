@@ -2,21 +2,13 @@ import Site from './Site.js';
 
 class SitesStorage {
     /** @type {Array<Site>} */
-    #sites = [];
+    sites = [];
 
     /**
      * @param {Array<Site>} [sites]
      */
     constructor(sites) {
         this.sites = sites;
-    }
-
-    set sites(sites) {
-        this.#sites = sites.map(Site.addMatchFunctions);
-    }
-
-    get sites() {
-        return this.#sites;
     }
 
     /**
@@ -43,7 +35,7 @@ class SitesStorage {
         if (!url) throw new TypeError("No URL specified");
 
         return this.sites
-            .filter(site => site.matchesURL(url))
+            .filter(site => Site.matchesURL(site, url))
             .sort((siteA, siteB) => siteB.url.length - siteA.url.length);
     }
 
