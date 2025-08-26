@@ -1,4 +1,4 @@
-import {default as escape} from "regexp.escape";
+import regexpEscape from "regexp.escape";
 
 class Site {
     constructor(url, enabled = true, useOwnStyles = false, styles = {}) {
@@ -9,7 +9,8 @@ class Site {
     }
 
     static matchesURL(site, url) {
-        const pattern = escape(site.url)
+        // Using polyfill because RegExp.escape is not implemented in Firefox ESR v128.x
+        const pattern = regexpEscape(site.url)
             .replaceAll("\\*", ".*") // Turn asterisks into RegExp wildcards
             .concat("$");            // Match until the end (exclusive)
 
