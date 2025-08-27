@@ -1,11 +1,11 @@
 # Squeeze
-> An archive of the CS50x Final Project version of Squeeze is available at
-> [https://www.github.com/javierhb23/squeeze50]()
 
 ### Video Demo:  https://www.youtube.com/watch?v=M77vGobC8r4
 ### Description
 Squeeze is a browser extension for Chrome and Firefox built with the [WXT
 Framework](https://wxt.dev/).
+
+<img width="640" height="400" alt="Before and after" src="https://github.com/user-attachments/assets/e38ca555-e2ca-40f3-8c61-60111c43d3fe" />
 
 It is meant to improve viewing simplistic/old-school websites that are too wide for comfortable
 reading on widescreen displays by applying a width limit and optionally adding a custom margin,
@@ -14,6 +14,12 @@ especially useful to those using vertical browser tabs.
 
 **Note**: Due to the simple method of applying these limits, this extension will not work properly
 with more complex websites such as Github.
+
+## Get the extension
+Squeeze is now available to download directly for Chrome and Firefox:
+- For Chrome: [Chrome Web
+  Store](https://chromewebstore.google.com/detail/squeeze/gdcodpmmknollhlbdmdihdedigbboane)
+- For Firefox: [Mozilla Addons](https://addons.mozilla.org/en-US/firefox/addon/squeeze-widescreen)
 
 ## Features
 - Keep a list of websites that should be *Squeezed* automatically upon visiting or on the fly when
@@ -67,3 +73,6 @@ All the code, project structure (including this README) and logic for this exten
 100% by me. The logo was designed by me using Inkscape. No use of LLMs or any other "AI models" was
 involved at any point during the development of this extension with the **only** exception being to
 brainstorm ideas for the extension name.
+
+> An archive of the CS50x Final Project version of Squeeze is available at
+> [https://www.github.com/javierhb23/squeeze50]()
