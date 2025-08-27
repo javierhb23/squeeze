@@ -1,14 +1,19 @@
 import regexpEscape from "regexp.escape";
 
 class Site {
-    constructor(url, enabled = true, useOwnStyles = false, styles = {}) {
+    url: string;
+    enabled: boolean;
+    useOwnStyles: boolean;
+    styles: object;
+
+    constructor(url: string, enabled: boolean = true, useOwnStyles: boolean = false, styles: object = {}) {
         this.url = url;
         this.enabled = enabled;
         this.useOwnStyles = useOwnStyles;
         this.styles = styles
     }
 
-    static matchesURL(site, url) {
+    static matchesURL(site: Site, url: string): boolean {
         // Using polyfill because RegExp.escape is not implemented in Firefox ESR v128.x
         const pattern = regexpEscape(site.url)
             .replaceAll("\\*", ".*") // Turn asterisks into RegExp wildcards
@@ -17,7 +22,7 @@ class Site {
         return RegExp(pattern).test(url);
     }
 
-    static matchesDisabledSite(site, sites) {
+    static matchesDisabledSite(site: Site, sites: Site[]): boolean {
         return sites.some(s =>
             s.enabled === false &&
             Site.matchesURL(site, s.url)
@@ -28,17 +33,9 @@ class Site {
      * Do error checking on given url and return a clean version of it. Throws an Error if one of
      * the checks fail.
      *
-     * @param {string} url
-     * @throws {TypeError|Error}
-     * @returns {string}
+     * @throws {Error}
      */
-    static errorCheckURL(url) {
-        // Check that url was given
-        if (!url) throw new TypeError("No URL specified");
-
-        // Check that url type is 'string'
-        if (typeof url !== "string") throw new TypeError("URL is not a string");
-
+    static errorCheckURL(url: string): string {
         // Check url length
         if (url.length < 1) throw new Error("URL length must be at least 1");
 
@@ -58,11 +55,8 @@ class Site {
 
     /**
      * Do error checking on given url. Returns true if no errors were found; false otherwise.
-     *
-     * @param {string} url
-     * @returns {boolean}
      */
-    static isValidURL(url) {
+    static isValidURL(url: string): boolean {
         try {
             this.errorCheckURL(url);
             return true;
@@ -80,7 +74,7 @@ class Site {
      *
      * See https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
      */
-    static cleanURL(url) {
+    static cleanURL(url: string): string {
         url = url.replaceAll(/\s/g, "");                  // Remove whitespace
         url = url.endsWith("/") ? url.slice(0, -1) : url; // Remove trailing slash
 
@@ -94,7 +88,7 @@ class Site {
         return url;
     }
 
-    static getURLSiblings(urlString) {
+    static getURLSiblings(urlString: string): string {
         // Any URL with trailing slash need only be suffixed with '*'
         if (urlString.endsWith("/"))
             return urlString + '*';

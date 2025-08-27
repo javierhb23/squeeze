@@ -1,37 +1,27 @@
 import Site from './Site.js';
 
-class SitesStorage {
-    /** @type {Array<Site>} */
-    sites = [];
+declare const browser: any; // TODO: use proper type
 
-    /**
-     * @param {Array<Site>} [sites]
-     */
-    constructor(sites) {
+class SitesStorage {
+    sites: Site[] = [];
+
+    constructor(sites: Site[]) {
         this.sites = sites;
     }
 
     /**
      * Sets this instance's "sites" property and the extension storage key "sites" to the given
      * value. Returns a promise to the calling instance.
-     *
-     * @param {Array<Site>} sites
-     * @returns {Promise<SitesStorage>}
      */
-    async store(sites) {
+    async store(sites: Site[]): Promise<SitesStorage> {
         this.sites = sites;
         sites = JSON.parse(JSON.stringify(sites)); // Fixes Firefox "DataCloneError: Function object could not be cloned."
         await browser.storage.local.set({ sites });
         return this;
     }
 
-    /**
-     * Returns a list of sites that match a given URL pattern sorted by length (descending).
-     *
-     * @param {string} url 
-     * @returns {Array<Site>}
-     */
-    search(url) {
+    /** Returns a list of sites that match a given URL pattern sorted by length (descending). */
+    search(url: string): Site[] {
         if (!url) throw new TypeError("No URL specified");
 
         return this.sites
@@ -39,27 +29,17 @@ class SitesStorage {
             .sort((siteA, siteB) => siteB.url.length - siteA.url.length);
     }
 
-    /**
-     * Look up an exact URL.
-     *
-     * @param {string} url
-     * @returns {Site|undefined}
-     */
-    get(url) {
+    /** Look up an exact URL. */
+    get(url: string): Site | undefined {
         return this.sites.find(site => site.url === url);
     }
 
-    checkDuplicates(newSite) {
+    checkDuplicates(newSite: Site): void {
         const isDuplicate = this.sites.some(site => site.url === newSite.url);
         if (isDuplicate) throw new Error(`${newSite.url} already exists`);
     }
 
-    /**
-     * @param {string} url
-     * @param {boolean} includeSiblings
-     * @returns {Promise<SitesStorage>}
-     */
-    add(url, includeSiblings) {
+    add(url: string, includeSiblings: boolean): Promise<SitesStorage> {
         url = Site.cleanURL(url);
         Site.errorCheckURL(url);
         if (includeSiblings)
@@ -71,12 +51,7 @@ class SitesStorage {
         return this.store(sites);
     }
 
-    /**
-     * @param {string} url
-     * @param {Site} newSite
-     * @returns {Promise<SitesStorage>}
-     */
-    update(url, newSite) {
+    update(url: string, newSite: Site): Promise<SitesStorage> {
         url = Site.cleanURL(url);
         Site.errorCheckURL(url);
         const sites = this.sites;
@@ -89,11 +64,7 @@ class SitesStorage {
         return this.store(sites);
     }
 
-    /**
-     * @param {string} url
-     * @returns {Promise<SitesStorage>}
-     */
-    remove(url) {
+    remove(url: string): Promise<SitesStorage> {
         if (!url) throw new TypeError("No URL specified");
 
         const sites = this.sites;
