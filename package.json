@@ -8,7 +8,6 @@
     "regexp.escape": "^2.0.1"
   },
   "devDependencies": {
-    "sass": "^1.87.0",
     "vitest": "^3.2.4",
     "wxt": "^0.20.8"
   },
