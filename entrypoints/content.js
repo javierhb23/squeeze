@@ -1,5 +1,8 @@
 export default defineContentScript({
-    matches: ['<all_urls>'],
+    matches: [
+        '*://*/*',
+        'file:///*/*'
+    ],
     main() {
         browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message.styles) {
