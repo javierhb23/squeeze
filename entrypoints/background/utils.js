@@ -19,7 +19,7 @@ async function styleTabs() {
 }
 
 async function applyStyles(url, tabId) {
-    url = Site.cleanURL(url);
+    url = Site.cleanURL(url, false); // Do not remove trailing slash
     if (!Site.isValidURL(url)) {
         console.log("Cannot apply styles to", url)
         return;
