@@ -4,3 +4,4 @@ node_modules/
 .wxt/
 chrome/
 web-ext.config.ts
+.env.submit
