@@ -80,9 +80,11 @@ class Site {
      *
      * See https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
      */
-    static cleanURL(url) {
-        url = url.replaceAll(/\s/g, "");                  // Remove whitespace
-        url = url.endsWith("/") ? url.slice(0, -1) : url; // Remove trailing slash
+    static cleanURL(url, removeTrailingSlash = true) {
+        url = url.replaceAll(/\s/g, ""); // Remove whitespace
+
+        if (removeTrailingSlash && url.endsWith("/"))
+            url = url.slice(0, -1) // Remove trailing slash
 
         // Remove query and fragment
         for (const marker of ['?', '#']) {
